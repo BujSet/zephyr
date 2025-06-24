@@ -1,0 +1,4 @@
+- func: aten::add.out(Tensor self, Tensor other, *, Scalar alpha=1, Tensor(a!) out) -> Tensor(a!)
+  variants: function
+  dispatch:
+    CPU: torch::executor::add_out
