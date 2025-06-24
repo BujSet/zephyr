@@ -2,6 +2,8 @@ manifest:
   remotes:
     - name: upstream
       url-base: https://github.com/zephyrproject-rtos
+    - name: petriok
+      url-base: https://github.com/petriok
   # zephyr-keep-sorted-start re(^\s+\- name:)
   projects:
     - name: canopennode
@@ -14,6 +16,14 @@ manifest:
       revision: 3b32c76efee705af146124fb4190f71be5a4e36e
       path: modules/lib/chre
       remote: upstream
+      groups:
+        - optional
+    - name: executorch
+      revision: poks/initial_zephyr_support
+      path: optional/modules/lib/executorch
+      repo-path: executorch
+      remote: petriok
+      submodules: true
       groups:
         - optional
     - name: lz4
