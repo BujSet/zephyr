@@ -100,7 +100,7 @@ def main():
     gen_ops_script = os.path.join(executorch_root, "codegen")
     gen_ops_script = os.path.join(gen_ops_script, "tools")
     gen_ops_script = os.path.join(gen_ops_script, "gen_ops_def.py")
-    gen_ops_script = "/home/zephyruser/optional/modules/lib/executorch/codegen/tools/gen_ops_def.py"
+    gen_ops_script = "/home/zephyruser/modules/lib/executorch/codegen/tools/gen_ops_def.py"
     if not os.path.exists(gen_ops_script):
         print(f"Error: gen_ops_def.py not found at {gen_ops_script}")
         sys.exit(1)
@@ -115,7 +115,7 @@ def main():
     
     # Step 3: Convert .pte to header file
     #pte_to_header_script = executorch_root / "examples" / "arm" / "executor_runner" / "pte_to_header.py"
-    pte_to_header_script = "/home/zephyruser/optional/modules/lib/executorch/examples/arm/executor_runner/pte_to_header.py"
+    pte_to_header_script = "/home/zephyruser/modules/lib/executorch/examples/arm/executor_runner/pte_to_header.py"
     if not os.path.exists(pte_to_header_script):
         print(f"Error: pte_to_header.py not found at {pte_to_header_script}")
         sys.exit(1)
