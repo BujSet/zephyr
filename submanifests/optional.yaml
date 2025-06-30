@@ -2,8 +2,8 @@ manifest:
   remotes:
     - name: upstream
       url-base: https://github.com/zephyrproject-rtos
-    - name: petriok
-      url-base: https://github.com/petriok
+    - name: BujSet
+      url-base: https://github.com/BujSet
   # zephyr-keep-sorted-start re(^\s+\- name:)
   projects:
     - name: canopennode
@@ -19,10 +19,10 @@ manifest:
       groups:
         - optional
     - name: executorch
-      revision: poks/initial_zephyr_support
+      revision: 75d4b2e80fc485e60c48f43b167b76132e7a31c7
       path: optional/modules/lib/executorch
       repo-path: executorch
-      remote: petriok
+      remote: BujSet
       submodules: true
       groups:
         - optional
