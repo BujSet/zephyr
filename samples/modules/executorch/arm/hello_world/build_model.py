@@ -28,20 +28,27 @@ def run_command(cmd, cwd=None, description=""):
 
 def main():
     parser = argparse.ArgumentParser(description="Build ExecuTorch ARM Hello World model")
-    parser.add_argument("--executorch-root", default="modules/lib/executorch", 
+    parser.add_argument("--executorch-root", default="~/modules/lib/executorch", 
                        help="Path to ExecuTorch root directory")
+#    parser.add_argument("--example_files_dir", default="/home/zephyruser/zephyr/samples/modules/executorch/arm/hello_world/example_files", 
+#                       help="Path to example files dir")
     parser.add_argument("--model-name", default="add", 
                        help="Name of the model (default: add)")
     parser.add_argument("--clean", action="store_true", 
                        help="Clean generated files before building")
     
     args = parser.parse_args()
+    print(args)
+    print(args.executorch_root)
     
     # Paths
     script_dir = Path(__file__).parent
     project_root = script_dir.parent.parent.parent.parent.parent.parent  # Go up to petriok root
     executorch_root = project_root / args.executorch_root
-    example_files_dir = project_root / "example_files"
+    print(args.executorch_root)
+    example_files_dir = "/home/zephyruser/zephyr/samples/modules/executorch/arm/hello_world/example_files"
+#    example_files_dir = project_root / "example_files"
+    print("example_files_dir= " + str(example_files_dir))
     src_dir = script_dir / "src"
     
 
@@ -64,8 +71,8 @@ def main():
                 print(f"Cleaned: {file_path}")
     
     # Step 1: Generate the .pte model file
-    export_script = example_files_dir / f"export_{model_name}.py"
-    if not export_script.exists():
+    export_script = os.path.join(example_files_dir, f"export_{model_name}.py")
+    if not os.path.exists(export_script):
         print(f"Error: Export script not found: {export_script}")
         sys.exit(1)
     
@@ -89,8 +96,12 @@ def main():
         sys.exit(1)
     
     # Step 2: Generate operator definitions
-    gen_ops_script = executorch_root / "codegen" / "tools" / "gen_ops_def.py"
-    if not gen_ops_script.exists():
+
+    gen_ops_script = os.path.join(executorch_root, "codegen")
+    gen_ops_script = os.path.join(gen_ops_script, "tools")
+    gen_ops_script = os.path.join(gen_ops_script, "gen_ops_def.py")
+    gen_ops_script = "/home/zephyruser/optional/modules/lib/executorch/codegen/tools/gen_ops_def.py"
+    if not os.path.exists(gen_ops_script):
         print(f"Error: gen_ops_def.py not found at {gen_ops_script}")
         sys.exit(1)
     
@@ -103,8 +114,9 @@ def main():
     )
     
     # Step 3: Convert .pte to header file
-    pte_to_header_script = executorch_root / "examples" / "arm" / "executor_runner" / "pte_to_header.py"
-    if not pte_to_header_script.exists():
+    #pte_to_header_script = executorch_root / "examples" / "arm" / "executor_runner" / "pte_to_header.py"
+    pte_to_header_script = "/home/zephyruser/optional/modules/lib/executorch/examples/arm/executor_runner/pte_to_header.py"
+    if not os.path.exists(pte_to_header_script):
         print(f"Error: pte_to_header.py not found at {pte_to_header_script}")
         sys.exit(1)
     
