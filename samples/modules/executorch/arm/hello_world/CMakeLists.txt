@@ -16,15 +16,19 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-switch -Wno-float-conversion 
 set(OPS_DEF_FILE "${CMAKE_CURRENT_SOURCE_DIR}/gen_ops_def.yml")
 if(EXISTS ${OPS_DEF_FILE})
     message(STATUS "Using selective operators from: ${OPS_DEF_FILE}")
+    message(STATUS "EXECUTORCH_DIR set to : ${EXECUTORCH_DIR}")
     
     # Include ExecuTorch selective build utilities
     # Use EXECUTORCH_DIR if available, otherwise use Zephyr's module discovery
     if(NOT DEFINED EXECUTORCH_DIR)
+        message(STATUS "ZEPHYR_EXECUTORCH_MODULE_DIR set to : ${ZEPHYR_EXECUTORCH_MODULE_DIR}")
         if(DEFINED ZEPHYR_EXECUTORCH_MODULE_DIR)
             set(EXECUTORCH_DIR ${ZEPHYR_EXECUTORCH_MODULE_DIR})
             message(STATUS "Using Zephyr module discovery: EXECUTORCH_DIR=${EXECUTORCH_DIR}")
         else()
-            message(FATAL_ERROR "ExecutorTorch module not found. Ensure it's properly configured in your Zephyr workspace.")
+            set(EXECUTORCH_DIR "/home/zephyruser/modules/lib/executorch")
+            message(STATUS "EXECUTORCH_DIR set to : ${EXECUTORCH_DIR}")
+	    #            message(FATAL_ERROR "ExecutorTorch module not found. Ensure it's properly configured in your Zephyr workspace.")
         endif()
     else()
         message(STATUS "Using predefined EXECUTORCH_DIR=${EXECUTORCH_DIR}")
