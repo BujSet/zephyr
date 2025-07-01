@@ -45,16 +45,22 @@ Building
       python build_model.py
 
    This script will:
+
    - Generate ``add.pte`` from the PyTorch model
+
    - Create ``gen_ops_def.yml`` with required operators
+
    - Convert the .pte file to ``src/model_pte.h``
+
    - Make the model data const for flash storage
+
 
 3. **Build the Zephyr Application**
 
    .. code-block:: bash
 
       west build -b nrf54l15dk/nrf54l15/cpuapp
+      west build -p always -b mps3/corstone300/an547
 
 4. **Flash and Run**
 
@@ -132,9 +138,13 @@ Troubleshooting
 ***************
 
 Common Issues:
+
 - **Build fails**: Ensure ExecuTorch is properly integrated as a Zephyr module
+
 - **Memory errors**: Increase allocator pool sizes
+
 - **Model loading fails**: Check that ``model_pte.h`` is generated correctly
+
 - **Inference fails**: Verify input tensor sizes match model expectations
 
 Architecture
