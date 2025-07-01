@@ -49,7 +49,7 @@ def main():
         (script_dir / "CMakeLists.txt", "CMake build file"),
         (script_dir / "prj.conf", "Project configuration"),
         (script_dir / "README.rst", "Documentation"),
-        (script_dir / "build_model.py", "Build pipeline script"),
+        (script_dir / ".." / "scripts" / "build_model.py", "Build pipeline script"),
         (src_dir / "main.cpp", "Main application"),
         (src_dir / "program_loader.h", "Program loader header"),
         (src_dir / "program_loader.cpp", "Program loader implementation"),
@@ -71,7 +71,7 @@ def main():
         (src_dir / "main.cpp", "ProgramLoader::getInstance", "Main app uses ProgramLoader"),
         (src_dir / "model_pte.h", "char model_pte[]", "Model data array"),
         (script_dir / "CMakeLists.txt", "gen_selected_ops", "Selective operator building"),
-        (script_dir / "build_model.py", "gen_ops_def.py", "Operator definition generation")
+        (script_dir / ".." / "scripts" / "build_model.py", "gen_ops_def.py", "Operator definition generation")
     ]
     
     for file_path, search_text, description in content_checks:

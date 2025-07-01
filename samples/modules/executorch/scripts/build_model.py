@@ -35,6 +35,8 @@ def main():
     parser = argparse.ArgumentParser(description="Generate ExecuTorch headers from existing .pte model")
     parser.add_argument("--executorch-root", required=True,
                        help="Path to ExecuTorch root directory")
+    parser.add_argument("--project-root", required=True,
+                       help="Path to Project root directory")
     parser.add_argument("--model-file", required=True, 
                        help="Filename of the .pte model (e.g., model_add.pte)")
     parser.add_argument("--clean", action="store_true", 
@@ -49,7 +51,7 @@ def main():
     # Paths
     script_dir = Path(__file__).resolve().parent  # Resolve the absolute path first
     # From scripts -> executorch -> modules -> samples -> zephyr -> petriok (5 levels up)
-    project_root = script_dir.parent.parent.parent.parent.parent
+    project_root = Path(args.project_root)
     
     # Sample directory can be provided or auto-detected
     if args.sample_dir:
@@ -77,7 +79,7 @@ def main():
         executorch_root = project_root / executorch_root
     
     print(f"Using executorch path: {executorch_root}")
-    example_files_dir = project_root / "example_files"
+    example_files_dir = project_root / "zephyr" / "samples" / "modules" / "executorch" / "hello_world" / "example_files"
     
     model_file = args.model_file
     pte_file_path = example_files_dir / model_file
