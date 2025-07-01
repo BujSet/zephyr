@@ -20,7 +20,7 @@ manifest:
         - optional
     - name: executorch
       revision: main
-      path: optional/modules/lib/executorch
+      path: modules/lib/executorch
       repo-path: executorch
       remote: BujSet
       submodules: true
