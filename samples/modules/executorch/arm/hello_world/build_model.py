@@ -117,6 +117,10 @@ def main():
     )
     
     # Step 4: Make the generated array const and remove section attribute
+    # TODO the header should have the following sugnature
+    # __attribute__((aligned(16))) const char model_pte[] = {
+
+
     header_path = src_dir / header_file
     if header_path.exists():
         content = header_path.read_text()
