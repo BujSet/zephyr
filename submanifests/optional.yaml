@@ -19,8 +19,8 @@ manifest:
       groups:
         - optional
     - name: executorch
-      revision: main
-      path: modules/lib/executorch
+      revision: zephyr_module
+      path: optional/modules/lib/executorch
       repo-path: executorch
       remote: BujSet
       submodules: true
