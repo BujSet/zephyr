@@ -10,7 +10,7 @@
 #include <memory>
 #include <vector>
 
-#include "arm_memory_allocator.hpp"
+#include "et_memory_allocator.hpp"
 
 using executorch::aten::ScalarType;
 using executorch::aten::Tensor;
