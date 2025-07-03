@@ -18,6 +18,8 @@
 #include <unistd.h>
 #include <memory>
 #include <vector>
+#include <zephyr/kernel.h>
+#include <zephyr/sys/printk.h>
 
 #include "arm_perf_monitor.h"
 
@@ -145,6 +147,10 @@ const float et_rtol = 0.01;
  * ET_ARM_BAREMETAL_SCRATCH_TEMP_ALLOCATOR_POOL_SIZE and
  * ET_ARM_BAREMETAL_FAST_SCRATCH_TEMP_ALLOCATOR_POOL_SIZE
  */
+
+#define ET_ARM_BAREMETAL_SCRATCH_TEMP_ALLOCATOR_POOL_SIZE 0x20000 // 2MB
+#define ET_ARM_BAREMETAL_FAST_SCRATCH_TEMP_ALLOCATOR_POOL_SIZE 0x60000 // 384KB
+
 const size_t temp_allocation_pool_size =
     ET_ARM_BAREMETAL_SCRATCH_TEMP_ALLOCATOR_POOL_SIZE;
 unsigned char __attribute__((
@@ -162,10 +168,10 @@ unsigned char* ethosu_fast_scratch = dedicated_sram;
 
 void et_pal_init(void) {
   // Enable ARM PMU Clock
-  ARM_PMU_Enable();
-  DCB->DEMCR |= DCB_DEMCR_TRCENA_Msk; // Trace enable
-  ARM_PMU_CYCCNT_Reset();
-  ARM_PMU_CNTR_Enable(PMU_CNTENSET_CCNTR_ENABLE_Msk);
+//  ARM_PMU_Enable();
+//  DCB->DEMCR |= DCB_DEMCR_TRCENA_Msk; // Trace enable
+//  ARM_PMU_CYCCNT_Reset();
+//  ARM_PMU_CNTR_Enable(PMU_CNTENSET_CCNTR_ENABLE_Msk);
 }
 
 /**
@@ -185,7 +191,8 @@ ET_NORETURN void et_pal_abort(void) {
 }
 
 et_timestamp_t et_pal_current_ticks(void) {
-  return ARM_PMU_Get_CCNTR();
+//  return ARM_PMU_Get_CCNTR();
+	return k_uptime_ticks();
 }
 
 et_tick_ratio_t et_pal_ticks_to_ns_multiplier(void) {
@@ -222,10 +229,13 @@ void et_pal_emit_log_message(
  */
 
 void* et_pal_allocate(ET_UNUSED size_t size) {
-  return nullptr;
+//  return nullptr;
+  return k_malloc(size);
 }
 
-void et_pal_free(ET_UNUSED void* ptr) {}
+void et_pal_free(ET_UNUSED void* ptr) {
+  k_free(ptr);
+} 
 
 namespace {
 
