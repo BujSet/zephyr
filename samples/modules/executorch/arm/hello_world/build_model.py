@@ -28,7 +28,7 @@ def run_command(cmd, cwd=None, description=""):
 
 def main():
     parser = argparse.ArgumentParser(description="Build ExecuTorch ARM Hello World model")
-    parser.add_argument("--executorch-root", default="~/optional/modules/lib/executorch", 
+    parser.add_argument("--executorch-root", default="~/modules/lib/executorch", 
                        help="Path to ExecuTorch root directory")
     parser.add_argument("--model-name", default="add", 
                        help="Name of the model (default: add)")
@@ -40,7 +40,8 @@ def main():
     # Paths
     script_dir = Path(__file__).parent
     project_root = script_dir.parent.parent.parent.parent.parent.parent  # Go up to petriok root
-    executorch_root = project_root / args.executorch_root
+    executorch_root = args.executorch_root
+    sys.path.append(Path(executorch_root).parent)
     example_files_dir = "/home/zephyruser/zephyr/samples/modules/executorch/arm/hello_world/example_files"
     src_dir = script_dir / "src"
     
@@ -67,20 +68,20 @@ def main():
         print(f"Error: Export script not found: {export_script}")
         sys.exit(1)
     
-    try:
-        run_command(
-            [sys.executable, str(export_script)],
-            cwd=script_dir,
-            description="Generating .pte model file"
-        )
-    except SystemExit:
-        print(f"\n❌ Model generation failed. This is likely because PyTorch/ExecuTorch is not installed.")
-        print(f"For now, using dummy model_pte.h for compilation testing.")
-        print(f"To generate a real model, install PyTorch and ExecuTorch:")
-        print(f"  pip install torch")
-        print(f"  # Install ExecuTorch according to documentation")
-        print(f"  python build_model.py")
-        return
+#    try:
+#        run_command(
+#            [sys.executable, str(export_script)],
+#            cwd=script_dir,
+#            description="Generating .pte model file"
+#        )
+#    except SystemExit:
+#        print(f"\n❌ Model generation failed. This is likely because PyTorch/ExecuTorch is not installed.")
+#        print(f"For now, using dummy model_pte.h for compilation testing.")
+#        print(f"To generate a real model, install PyTorch and ExecuTorch:")
+#        print(f"  pip install torch")
+#        print(f"  # Install ExecuTorch according to documentation")
+#        print(f"  python build_model.py")
+#        return
     
     if not Path(script_dir / pte_file).exists():
         print(f"Error: Model file {pte_file} was not generated")
@@ -88,22 +89,22 @@ def main():
     
     # Step 2: Generate operator definitions
 
-    gen_ops_script = "/home/zephyruser/optional/modules/lib/executorch/codegen/tools/gen_ops_def.py"
+    gen_ops_script = "/home/zephyruser/modules/lib/executorch/codegen/tools/gen_ops_def.py"
     if not os.path.exists(gen_ops_script):
         print(f"Error: gen_ops_def.py not found at {gen_ops_script}")
         sys.exit(1)
     
-    run_command(
-        [sys.executable, str(gen_ops_script), 
-         "--output_path", ops_def_file,
-         "--model_file_path", pte_file],
-        cwd=script_dir,
-        description="Generating operator definitions"
-    )
+#    run_command(
+#        [sys.executable, str(gen_ops_script), 
+#         "--output_path", ops_def_file,
+#         "--model_file_path", pte_file],
+#        cwd=script_dir,
+#        description="Generating operator definitions"
+#    )
     
     # Step 3: Convert .pte to header file
     #pte_to_header_script = executorch_root / "examples" / "arm" / "executor_runner" / "pte_to_header.py"
-    pte_to_header_script = "/home/zephyruser/optional/modules/lib/executorch/examples/arm/executor_runner/pte_to_header.py"
+    pte_to_header_script = "/home/zephyruser/modules/lib/executorch/examples/arm/executor_runner/pte_to_header.py"
     if not os.path.exists(pte_to_header_script):
         print(f"Error: pte_to_header.py not found at {pte_to_header_script}")
         sys.exit(1)

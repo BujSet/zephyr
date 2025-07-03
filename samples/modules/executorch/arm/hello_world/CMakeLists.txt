@@ -41,14 +41,23 @@ if(EXISTS ${OPS_DEF_FILE})
     # Generate selective operators library
     gen_selected_ops(
         LIB_NAME "hello_world_ops_lib" 
-        OPS_SCHEMA_YAML "${OPS_DEF_FILE}"
+	OPS_SCHEMA_YAML "${OPS_DEF_FILE}"
     )
     
+#	ROOT OPS ""
+#	INCLUDE_ALL_OPS ""
+#	OPS_FROM_MODEL ""
+#	DTYPE_SELECTIVE_BUILD "OFF"
+#	OPS_FROM_MODEL "/home/zephyruser/zephyr/samples/modules/executorch/arm/hello_world/add.pte"
+#	DTYPE_SELECTIVE_BUILD "ON"
     # Generate bindings for the selected kernels
     generate_bindings_for_kernels(
         LIB_NAME "hello_world_ops_lib" 
         FUNCTIONS_YAML "${OPS_DEF_FILE}"
     )
+#	CUSTOM_OPS_YAML ""
+#	ADD_EXCEPTION_BOUNDARY ""
+#	DTYPE_SELECTIVE_BUILD "OFF"
     
     # Create the actual library target with portable kernels
     # portable_kernels provides the actual kernel implementations (add_out, etc.)
@@ -57,6 +66,7 @@ if(EXISTS ${OPS_DEF_FILE})
         KERNEL_LIBS portable_kernels
         DEPS executorch_core
     )
+#	DTYPE_SELECTIVE_BUILD "OFF"
     
     # Use our custom selective operators library
     set(EXECUTORCH_OPS_LIB hello_world_ops_lib)
