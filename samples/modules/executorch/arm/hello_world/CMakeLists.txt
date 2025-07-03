@@ -80,8 +80,10 @@ else()
 endif()
 
 set(app_sources
-    src/main.cpp
-    src/program_loader.cpp
+	src/main.cpp
+	src/program_loader.cpp
+	#src/arm_executor_runner.cpp
+	#src/arm_perf_monitor.cpp
 )
 target_sources(app PRIVATE ${app_sources})
 
