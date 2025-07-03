@@ -1,0 +1,143 @@
+ARG VIRTUAL_ENV=/opt/venv
+ARG PASSWORD="zephyr"
+ARG BASE_IMAGE=ubuntu:22.04
+FROM ${BASE_IMAGE}
+SHELL ["/bin/bash", "-c"]
+ARG VIRTUAL_ENV
+ARG PASSWORD
+ARG TARGETARCH
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN rm /var/lib/dpkg/info/libc-bin.*
+RUN apt-get clean
+RUN apt-get -y update
+RUN apt-get install -y libc-bin
+
+RUN apt-get -y update
+RUN apt-get clean
+RUN apt-get install --no-install-recommends -y dos2unix
+RUN apt-get install --no-install-recommends -y ca-certificates
+RUN apt-get install -y --reinstall libc-bin
+RUN apt-get install --no-install-recommends -y file
+RUN apt-get install --no-install-recommends -y locales
+RUN apt-get install --no-install-recommends -y git
+RUN apt-get install --no-install-recommends -y build-essential
+RUN apt-get install --no-install-recommends -y cmake
+RUN apt-get install --no-install-recommends -y ninja-build gperf
+RUN apt-get install --no-install-recommends -y device-tree-compiler
+RUN apt-get install --no-install-recommends -y wget
+RUN apt-get install --no-install-recommends -y curl
+RUN apt-get install --no-install-recommends -y xz-utils
+RUN apt-get install --no-install-recommends -y dos2unix
+RUN apt-get install --no-install-recommends -y vim
+RUN apt-get install --no-install-recommends -y nano
+RUN apt-get install --no-install-recommends -y mc
+RUN apt-get install --no-install-recommends -y openssh-server
+
+# Zephyr SDK relies on python 3.12
+RUN apt install software-properties-common -y
+RUN add-apt-repository ppa:deadsnakes/ppa -y
+RUN apt update
+RUN apt install -y python3.12 python3.12-dev python3.12-venv python3-pip
+RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.12 1
+
+# Upgrade cmake ot 3.24
+RUN apt update
+RUN apt install cmake
+RUN apt install software-properties-common lsb-release
+RUN apt update
+RUN test -f /usr/share/doc/kitware-archive-keyring/copyright || \
+    wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | gpg --dearmor - | tee /usr/share/keyrings/kitware-archive-keyring.gpg >/dev/null
+# RUN apt install kitware-archive-keyring
+RUN "deb [signed-by=/usr/share/keyrings/kitware-archive-keyring.gpg] https://apt.kitware.com/ubuntu/ $(lsb_release -cs) main" | tee /etc/apt/sources.list.d/kitware.list > /dev/null
+RUN apt update
+RUN apt install cmake
+
+# Install additional required software for Zephyr
+RUN apt install --no-install-recommends -y ccache \
+    dfu-util \
+    python3-setuptools \
+    python3-tk \
+    python3-wheel \
+    make \
+    gcc \
+    libsdl2-dev \
+    libmagic1 \
+    xterm \
+    telnet \
+    net-tools
+
+RUN if [ "$TARGETARCH" = "amd64" ]; then \
+        apt install --no-install-recommends -y gcc-multilib g++-multilib; \
+    fi
+
+RUN if [ "$TARGETARCH" = "arm64" ]; then \
+    apt install --no-install-recommends -y libc6-amd64-cross; \
+    ln -s /usr/x86_64-linux-gnu/lib64/ /lib64; \
+    export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/lib64:/usr/x86_64-linux-gnu/lib"; \
+fi
+
+ENV VIRTUAL_ENV=${VIRTUAL_ENV}
+RUN python3 -m venv ${VIRTUAL_ENV}
+ENV PATH="${VIRTUAL_ENV}/bin:$PATH"
+
+# Install west
+RUN python3 -m pip install --no-cache-dir west
+
+# Clean up stale packages
+RUN apt-get clean -y && \
+        apt-get autoremove --purge -y && \
+        rm -rf /var/lib/apt/lists/*
+
+# Create a non-root user and group
+RUN useradd -d /home/zephyruser -m -s /bin/bash zephyruser
+# Switch to the non-root user
+USER zephyruser
+
+# kitware script must be run as root user
+USER root
+RUN cd /home/zephyruser/ && wget https://apt.kitware.com/kitware-archive.sh && \
+    chmod +x kitware-archive.sh && \
+    ./kitware-archive.sh
+
+# Install zephyr SDK, must be run as non-root user
+USER zephyruser
+RUN cd /home/zephyruser/ && \
+    python3 -m venv .venv && \
+    source .venv/bin/activate && \
+    python3 -m pip install --upgrade pip && \
+    wget https://github.com/zephyrproject-rtos/sdk-ng/releases/download/v0.16.0/zephyr-sdk-0.16.0_linux-x86_64.tar.xz && \
+    tar -xf zephyr-sdk-0.16.0_linux-x86_64.tar.xz && \
+    rm -f zephyr-sdk-0.16.0_linux-x86_64.tar.xz && \
+    cd zephyr-sdk-0.16.0/ && \
+    ./setup.sh -c -t arm-zephyr-eabi
+
+USER zephyruser
+RUN cd /home/zephyruser/ && \
+    source .venv/bin/activate && \
+    pip install west
+
+RUN cd /home/zephyruser/ && \
+    source .venv/bin/activate && \
+    git clone https://github.com/BujSet/zephyr.git && \
+    cd zephyr/ && \
+    git switch -c executorch-module-integration origin/executorch-module-integration
+
+RUN cd /home/zephyruser/ && \
+    source .venv/bin/activate && \
+    python3 -m pip install --upgrade pip && \
+    python3 -m pip install west torch numpy && \
+    python3 -m pip install -r zephyr/scripts/requirements.txt
+
+RUN cd /home/zephyruser/ && \
+    source .venv/bin/activate && \
+    west init -l zephyr && \
+    west config manifest.project-filter -- +executorch && \
+    west -v update && \
+    source zephyr/zephyr-env.sh
+
+ENV ZEPHYR_TOOLCHAIN_VARIANT=zephyr
+ENV ZEPHYR_SDK_INSTALL_DIR=/home/zephyruser/zephyr-sdk-0.16.0
+USER zephyruser
+
