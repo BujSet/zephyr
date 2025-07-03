@@ -33,6 +33,9 @@ set(NO_THREADSAFE_STATICS $<TARGET_PROPERTY:compiler-cpp,no_threadsafe_statics>)
 zephyr_compile_options($<$<COMPILE_LANGUAGE:CXX>:${NO_THREADSAFE_STATICS}>)
 
 set(EXECUTORCH_DIR ${ZEPHYR_CURRENT_MODULE_DIR})
+message(STATUS "EXECUTORCH_DIR set to: ${EXECUTORCH_DIR}")
+include(${EXECUTORCH_DIR}/tools/cmake/common/preset.cmake)
+include(${EXECUTORCH_DIR}/tools/cmake/preset/zephyr.cmake)
 
 # HACK: Force the parent directory of executorch into the global include path.
 # This is needed because the executorch CMake scripts generate a relative
@@ -48,15 +51,15 @@ include_directories(${EXECUTORCH_PARENT_DIR})
 set(EXECUTORCH_BUILD_EXECUTORCH_PYBIND OFF)
 set(EXECUTORCH_BUILD_GENERATED_SRC OFF)
 set(EXECUTORCH_BUILD_SDK OFF)
-set(EXECUTORCH_BUILD_TESTS OFF)
+#set(EXECUTORCH_BUILD_TESTS OFF)
 # Use Kconfig to control portable ops building
 if(CONFIG_EXECUTORCH_BUILD_PORTABLE_OPS)
 	set(EXECUTORCH_BUILD_PORTABLE_OPS ON)
 else()
 	set(EXECUTORCH_BUILD_PORTABLE_OPS OFF)
 endif()
-set(EXECUTORCH_BUILD_PTHREADPOOL OFF)
-set(EXECUTORCH_BUILD_CPUINFO OFF)
+#set(EXECUTORCH_BUILD_PTHREADPOOL ON)
+#set(EXECUTORCH_BUILD_CPUINFO OFF)
 
 if(CONFIG_EXECUTORCH_BUILD_EXECUTOR_RUNNER)
 	set(EXECUTORCH_BUILD_EXECUTOR_RUNNER ON)
