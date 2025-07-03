@@ -2,8 +2,8 @@ manifest:
   remotes:
     - name: upstream
       url-base: https://github.com/zephyrproject-rtos
-    - name: BujSet
-      url-base: https://github.com/BujSet
+    - name: executorch
+      url-base: https://github.com/pytorch
   # zephyr-keep-sorted-start re(^\s+\- name:)
   projects:
     - name: canopennode
@@ -19,10 +19,10 @@ manifest:
       groups:
         - optional
     - name: executorch
-      revision: zephyr_module
-      path: optional/modules/lib/executorch
+      revision: main
+      path: modules/lib/executorch
       repo-path: executorch
-      remote: BujSet
+      remote: executorch
       submodules: true
       groups:
         - optional
