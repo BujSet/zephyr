@@ -4,13 +4,33 @@ This tutorial is to demonstrate how to run an exported Executorch model in the A
 
 # Setup
 
-Its strongly recommended to use the docker image paired with this tutorial. You can do this by either buildin gthe image directly, or pull frim Dockerhub.
+Its strongly recommended to use the docker image paired with this tutorial. You can do this by either buildin gthe image directly, or pull from Dockerhub.
 
 ## Building the Image from source
 
+```
+docker build -t rselagam/zephyr-armfvp:v2 -f Dockerfile.armfvp_zephyr  .
+```
+
 ## Pulling the container
 
+```
+docker pull rselagam/zephyr-armfvp:v1
+```
+
 ## Starting the docker image
+
+### Linux/macOS
+
+```
+docker run --rm -it --entrypoint /bin/bash  --net=host -v "$(pwd)"/workspace:/workspace -w home/zephyruser/ rselagam/zephyr-armfvp:v1
+```
+
+### Windows (PowerShell)
+
+```
+docker run --rm -it --entrypoint /bin/bash --net=host -v "${PWD}\workspace:/workspace" -w /home/zephyruser/ rselagam/zephyr-armfvp:v1
+```
 
 # Wokring inside the Docker image
 
@@ -33,10 +53,25 @@ source zephyr/zephyr-env.sh
 export PYTHONPATH=/home/zephyruser/modules/lib
 ```
 
+## Setup FVP Simulator
+
+```
+cd /home/zephyruser/modules/lib/executorch/
+./examples/arm/setup.sh --i-agree-to-the-contained-eula  --target-toolchain zephyr
+source /home/zephyruser/modules/lib/executorch/examples/arm/ethos-u-scratch/setup_path.sh
+```
+
 ## Building the elf
 
 ```
 cd /home/zephyruser/zephyr/samples/modules/executorch/arm/hello_world
 west build -p always -b mps3/corstone300/an547
+```
+## Running a model in the simulator
 
 ```
+FVP_Corstone_SSE-300_Ethos-U55 -a /home/zephyruser/zephyr/samples/modules/executorch/arm/hello_world/build/zephyr/zephyr.elf -C mps3_board.visualisation.disable-visualisation=1 -C mps3_board.telnetterminal0.start_telnet=0 -C mps3_board.uart0.out_file='-' --simlimit 30
+```
+
+And you should see output like:
+
