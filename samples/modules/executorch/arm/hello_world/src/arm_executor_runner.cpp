@@ -49,7 +49,7 @@
  * files/memory
  */
 
-const size_t input_file_allocation_pool_size = 60 * 1024 * 1024;
+const size_t input_file_allocation_pool_size = 60 * 1024;
 unsigned char __attribute__((
     section("input_data_sec"),
     aligned(16))) input_file_allocation_pool[input_file_allocation_pool_size];
@@ -105,7 +105,7 @@ using executorch::etdump::ETDumpResult;
  * availible memory.
  */
 #if !defined(ET_ARM_BAREMETAL_METHOD_ALLOCATOR_POOL_SIZE)
-#define ET_ARM_BAREMETAL_METHOD_ALLOCATOR_POOL_SIZE (60 * 1024 * 1024)
+#define ET_ARM_BAREMETAL_METHOD_ALLOCATOR_POOL_SIZE (60 * 1024)
 #endif
 const size_t method_allocation_pool_size =
     ET_ARM_BAREMETAL_METHOD_ALLOCATOR_POOL_SIZE;
@@ -148,8 +148,8 @@ const float et_rtol = 0.01;
  * ET_ARM_BAREMETAL_FAST_SCRATCH_TEMP_ALLOCATOR_POOL_SIZE
  */
 
-#define ET_ARM_BAREMETAL_SCRATCH_TEMP_ALLOCATOR_POOL_SIZE 0x20000 // 2MB
-#define ET_ARM_BAREMETAL_FAST_SCRATCH_TEMP_ALLOCATOR_POOL_SIZE 0x60000 // 384KB
+#define ET_ARM_BAREMETAL_SCRATCH_TEMP_ALLOCATOR_POOL_SIZE 0x2000 // 2MB
+#define ET_ARM_BAREMETAL_FAST_SCRATCH_TEMP_ALLOCATOR_POOL_SIZE 0x6000 // 384KB
 
 const size_t temp_allocation_pool_size =
     ET_ARM_BAREMETAL_SCRATCH_TEMP_ALLOCATOR_POOL_SIZE;
