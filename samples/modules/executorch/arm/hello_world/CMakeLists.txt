@@ -61,10 +61,10 @@ set(EXECUTORCH_OPS_LIB hello_world_ops_lib)
 message(STATUS "Using selective operators library: ${EXECUTORCH_OPS_LIB}")
 
 set(app_sources
-	src/main.cpp
-	src/program_loader.cpp
-	#src/arm_executor_runner.cpp
-	#src/arm_perf_monitor.cpp
+	#src/main.cpp
+	#src/program_loader.cpp
+	src/arm_executor_runner.cpp
+	src/arm_perf_monitor.cpp
 )
 target_sources(app PRIVATE ${app_sources})
 
