@@ -1,0 +1,11 @@
+Using program_loader.cpp with aten::add.out selected
+FLASH:      394456 B       512 KB     75.24%
+
+Using program_loader.cpp with all ops:
+region `FLASH' overflowed by 3197288 bytes
+
+Using arm_executor_runner with aten::add.out selected
+region `FLASH' overflowed by 62785568 bytes
+
+Using arm_executor_runner with all ops:
+region `FLASH' overflowed by 66112688 bytes
