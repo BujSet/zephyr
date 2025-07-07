@@ -1,5 +1,5 @@
-#ifndef ARM_MEMORY_ALLOCATOR_HPP
-#define ARM_MEMORY_ALLOCATOR_HPP
+#ifndef _ET_MEMORY_ALLOCATOR_HPP
+#define _ET_MEMORY_ALLOCATOR_HPP
 
 #include <executorch/runtime/core/memory_allocator.h>
 
@@ -28,4 +28,4 @@ private:
     size_t used_;
 };
 
-#endif  // ARM_MEMORY_ALLOCATOR_HPP
+#endif  // _ET_MEMORY_ALLOCATOR_HPP
