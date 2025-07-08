@@ -175,6 +175,7 @@ Result<BufferCleanup> prepare_input_tensors(
   MethodMeta method_meta = method.method_meta();
   size_t num_inputs = method_meta.num_inputs();
   size_t num_allocated = 0;
+  ET_LOG(Info, "Preparing input tensor....");
 
 #if defined(SEMIHOSTING)
   ET_CHECK_OR_RETURN_ERROR(
@@ -235,7 +236,9 @@ Result<BufferCleanup> prepare_input_tensors(
     Tensor t(&impl);
 
     // If input_buffers.size <= 0, we don't have any input, fill t with 1's.
+    ET_LOG(Info, "Testing if input_buffers.size <= 0?");
     if (input_buffers.size() <= 0) {
+      ET_LOG(Info, "input_buffers.size <= 0? TRUE, setting values to 1s");
       for (size_t j = 0; j < t.numel(); j++) {
         switch (t.scalar_type()) {
           case ScalarType::Int:
@@ -653,11 +656,11 @@ int main(int argc, const char* argv[]) {
   ET_CHECK(status == Error::Ok);
 
   // Print the outputs.
+  ET_LOG(Info, "Printing outputs.");
   for (int i = 0; i < outputs.size(); ++i) {
     if (outputs[i].isTensor()) {
       Tensor tensor = outputs[i].toTensor();
 #if !defined(SEMIHOSTING)
-#if defined(ET_DUMP_OUTPUT)
       // The output might be collected and parsed so printf() is used instead
       // of ET_LOG() here
       for (int j = 0; j < tensor.numel(); ++j) {
@@ -688,7 +691,6 @@ int main(int argc, const char* argv[]) {
               tensor.const_data_ptr<int8_t>()[j]);
         }
       }
-#endif
 #else
       char out_filename[255];
       snprintf(out_filename, 255, "%s-%d.bin", output_basename, i);
