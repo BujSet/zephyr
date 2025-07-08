@@ -22,6 +22,8 @@
 #include <zephyr/sys/printk.h>
 
 #include "arm_perf_monitor.h"
+#include "arm_memory_allocator.hpp"
+#include "arm_zephyr_pal.hpp"
 
 #if defined(ET_BUNDLE_IO)
 #include <executorch/devtools/bundled_program/bundled_program.h>
@@ -49,7 +51,7 @@
  * files/memory
  */
 
-const size_t input_file_allocation_pool_size = 60 * 1024;
+const size_t input_file_allocation_pool_size = 60 * 1024 * 1024;
 unsigned char __attribute__((
     section("input_data_sec"),
     aligned(16))) input_file_allocation_pool[input_file_allocation_pool_size];
@@ -148,8 +150,8 @@ const float et_rtol = 0.01;
  * ET_ARM_BAREMETAL_FAST_SCRATCH_TEMP_ALLOCATOR_POOL_SIZE
  */
 
-#define ET_ARM_BAREMETAL_SCRATCH_TEMP_ALLOCATOR_POOL_SIZE 0x2000 // 2MB
-#define ET_ARM_BAREMETAL_FAST_SCRATCH_TEMP_ALLOCATOR_POOL_SIZE 0x6000 // 384KB
+#define ET_ARM_BAREMETAL_SCRATCH_TEMP_ALLOCATOR_POOL_SIZE 0x200
+#define ET_ARM_BAREMETAL_FAST_SCRATCH_TEMP_ALLOCATOR_POOL_SIZE 0x600
 
 const size_t temp_allocation_pool_size =
     ET_ARM_BAREMETAL_SCRATCH_TEMP_ALLOCATOR_POOL_SIZE;
@@ -166,130 +168,7 @@ unsigned char* ethosu_fast_scratch = dedicated_sram;
 }
 #endif
 
-void et_pal_init(void) {
-  // Enable ARM PMU Clock
-//  ARM_PMU_Enable();
-//  DCB->DEMCR |= DCB_DEMCR_TRCENA_Msk; // Trace enable
-//  ARM_PMU_CYCCNT_Reset();
-//  ARM_PMU_CNTR_Enable(PMU_CNTENSET_CCNTR_ENABLE_Msk);
-}
-
-/**
- * Implementation of the et_pal_<funcs>()
- *
- * This functions are hardware adaption type of functions for things like
- * time/logging/memory allocation that could call your RTOS or need to to
- * be implemnted in some way.
- */
-
-ET_NORETURN void et_pal_abort(void) {
-#if !defined(SEMIHOSTING)
-  __builtin_trap();
-#else
-  _exit(-1);
-#endif
-}
-
-et_timestamp_t et_pal_current_ticks(void) {
-//  return ARM_PMU_Get_CCNTR();
-	return k_uptime_ticks();
-}
-
-et_tick_ratio_t et_pal_ticks_to_ns_multiplier(void) {
-  // Since we don't know the CPU freq for your target and justs cycles in the
-  // FVP for et_pal_current_ticks() we return a conversion ratio of 1
-  return {1, 1};
-}
-
-/**
- * Emit a log message via platform output (serial port, console, etc).
- */
-void et_pal_emit_log_message(
-    ET_UNUSED et_timestamp_t timestamp,
-    et_pal_log_level_t level,
-    const char* filename,
-    ET_UNUSED const char* function,
-    size_t line,
-    const char* message,
-    ET_UNUSED size_t length) {
-  fprintf(
-      stderr,
-      "%c [executorch:%s:%zu %s()] %s\n",
-      level,
-      filename,
-      line,
-      function,
-      message);
-}
-
-/**
- * Dynamic memory allocators intended to be used by temp_allocator
- * to implement malloc()/free() type of allocations.
- * Currenyly not used.
- */
-
-void* et_pal_allocate(ET_UNUSED size_t size) {
-//  return nullptr;
-  return k_malloc(size);
-}
-
-void et_pal_free(ET_UNUSED void* ptr) {
-  k_free(ptr);
-} 
-
 namespace {
-
-// Setup our own allocator that can show some extra stuff like used and free
-// memory info
-class ArmMemoryAllocator : public executorch::runtime::MemoryAllocator {
- public:
-  ArmMemoryAllocator(uint32_t size, uint8_t* base_address)
-      : MemoryAllocator(size, base_address), used_(0), peak_used_(0) {}
-
-  void* allocate(size_t size, size_t alignment = kDefaultAlignment) override {
-    void* ret = executorch::runtime::MemoryAllocator::allocate(size, alignment);
-    if (ret != nullptr) {
-      // Align with the same code as in MemoryAllocator::allocate() to keep
-      // used_ "in sync" As alignment is expected to be power of 2 (checked by
-      // MemoryAllocator::allocate()) we can check it the lower bits
-      // (same as alignment - 1) is zero or not.
-      if ((size & (alignment - 1)) == 0) {
-        // Already aligned.
-        used_ += size;
-      } else {
-        used_ = (used_ | (alignment - 1)) + 1 + size;
-      }
-      if (used_ > peak_used_)
-        peak_used_ = used_;
-    }
-    return ret;
-  }
-
-  // Returns the used size of the allocator's memory buffer.
-  size_t used_size() const {
-    return used_;
-  }
-
-  // Returns the peak memory usage of the allocator's memory buffer
-  // Peak usage is useful when doing multiple allocations & resets
-  size_t peak_used() const {
-    return peak_used_;
-  }
-
-  // Returns the free size of the allocator's memory buffer.
-  size_t free_size() const {
-    return executorch::runtime::MemoryAllocator::size() - used_;
-  }
-
-  void reset() {
-    executorch::runtime::MemoryAllocator::reset();
-    used_ = 0;
-  }
-
- private:
-  size_t used_;
-  size_t peak_used_;
-};
 
 Result<BufferCleanup> prepare_input_tensors(
     Method& method,
@@ -584,23 +463,31 @@ int main(int argc, const char* argv[]) {
         buffer != nullptr,
         "Could not allocate memory for memory planned buffer size %zu",
         buffer_size);
+    ET_LOG(Info, "Allocated buffer %zu, size %zu.", id, buffer_size);
     planned_buffers.push_back(buffer);
+    ET_LOG(Info, "Pushed back buffer %zu, size %zu.", id, buffer_size);
     planned_spans.push_back({planned_buffers.back(), buffer_size});
+    ET_LOG(Info, "Pushed back to span buffer %zu, size %zu.", id, buffer_size);
   }
 
+  ET_LOG(Info, "Computing planned buffer size.");
   size_t planned_buffer_memsize =
       method_allocator.used_size() - planned_buffer_membase;
 
+  ET_LOG(Info, "Instantiating hierarchical allocator planner.");
   HierarchicalAllocator planned_memory(
       {planned_spans.data(), planned_spans.size()});
 
+  ET_LOG(Info, "Instantiating temp allocator with pool size %zu.", temp_allocation_pool_size);
   ArmMemoryAllocator temp_allocator(
       temp_allocation_pool_size, temp_allocation_pool);
 
+  ET_LOG(Info, "Instantiating memory manager.");
   MemoryManager memory_manager(
       &method_allocator, &planned_memory, &temp_allocator);
 
   size_t method_loaded_membase = method_allocator.used_size();
+  ET_LOG(Info, "method loaded membase %zu.", method_loaded_membase);
 
   executorch::runtime::EventTracer* event_tracer_ptr = nullptr;
 
@@ -610,6 +497,7 @@ int main(int argc, const char* argv[]) {
   event_tracer_ptr = &etdump_gen;
 #endif
 
+  ET_LOG(Info, "Loading method.");
   Result<Method> method =
       program->load_method(method_name, &memory_manager, event_tracer_ptr);
 
