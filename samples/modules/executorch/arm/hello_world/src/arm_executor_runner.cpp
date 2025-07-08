@@ -107,13 +107,11 @@ using executorch::etdump::ETDumpResult;
  * availible memory.
  */
 #if !defined(ET_ARM_BAREMETAL_METHOD_ALLOCATOR_POOL_SIZE)
-#define ET_ARM_BAREMETAL_METHOD_ALLOCATOR_POOL_SIZE (60 * 1024)
+#define ET_ARM_BAREMETAL_METHOD_ALLOCATOR_POOL_SIZE (16 * 1024)
 #endif
 const size_t method_allocation_pool_size =
     ET_ARM_BAREMETAL_METHOD_ALLOCATOR_POOL_SIZE;
-unsigned char __attribute__((
-    section("input_data_sec"),
-    aligned(16))) method_allocation_pool[method_allocation_pool_size];
+unsigned char method_allocation_pool[method_allocation_pool_size];
 
 #if defined(ET_BUNDLE_IO)
 
@@ -150,7 +148,7 @@ const float et_rtol = 0.01;
  * ET_ARM_BAREMETAL_FAST_SCRATCH_TEMP_ALLOCATOR_POOL_SIZE
  */
 
-#define ET_ARM_BAREMETAL_SCRATCH_TEMP_ALLOCATOR_POOL_SIZE 0x200
+#define ET_ARM_BAREMETAL_SCRATCH_TEMP_ALLOCATOR_POOL_SIZE 2048
 #define ET_ARM_BAREMETAL_FAST_SCRATCH_TEMP_ALLOCATOR_POOL_SIZE 0x600
 
 const size_t temp_allocation_pool_size =
