@@ -61,7 +61,7 @@
 	 */
 	itcm: itcm@10000000 {	/* alias @ 0x0 */
 		compatible = "zephyr,memory-region";
-		reg = <0x10000000 DT_SIZE_M(64)>;
+		reg = <0x10000000 DT_SIZE_M(256)>;
 		zephyr,memory-region = "ITCM";
 	};
 
