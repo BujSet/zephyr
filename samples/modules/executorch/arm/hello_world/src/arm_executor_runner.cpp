@@ -107,7 +107,7 @@ using executorch::etdump::ETDumpResult;
  * availible memory.
  */
 #if !defined(ET_ARM_BAREMETAL_METHOD_ALLOCATOR_POOL_SIZE)
-#define ET_ARM_BAREMETAL_METHOD_ALLOCATOR_POOL_SIZE (16 * 1024)
+#define ET_ARM_BAREMETAL_METHOD_ALLOCATOR_POOL_SIZE (512 * 1024)
 #endif
 const size_t method_allocation_pool_size =
     ET_ARM_BAREMETAL_METHOD_ALLOCATOR_POOL_SIZE;
