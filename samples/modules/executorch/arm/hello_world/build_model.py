@@ -30,8 +30,8 @@ def main():
     parser = argparse.ArgumentParser(description="Build ExecuTorch ARM Hello World model")
     parser.add_argument("--executorch-root", default="~/modules/lib/executorch", 
                        help="Path to ExecuTorch root directory")
-    parser.add_argument("--model-name", default="add", 
-                       help="Name of the model (default: add)")
+    parser.add_argument("--pte-file", default="add.pte", 
+                       help="Exported model (default: add.pte)")
     parser.add_argument("--clean", action="store_true", 
                        help="Clean generated files before building")
     
@@ -45,12 +45,10 @@ def main():
     example_files_dir = "/home/zephyruser/zephyr/samples/modules/executorch/arm/hello_world/example_files"
     src_dir = script_dir / "src"
     
-    model_name = args.model_name
-    pte_file = f"{model_name}.pte"
+    pte_file = args.pte_file 
     ops_def_file = "gen_ops_def.yml"
     header_file = "model_pte.h"
     
-    print(f"Building ExecuTorch model: {model_name}")
     print(f"ExecuTorch root: {executorch_root}")
     print(f"Working directory: {script_dir}")
     
@@ -61,46 +59,6 @@ def main():
             if Path(file_path).exists():
                 Path(file_path).unlink()
                 print(f"Cleaned: {file_path}")
-    
-    # Step 1: Generate the .pte model file
-    export_script = os.path.join(example_files_dir, f"export_{model_name}.py")
-    if not os.path.exists(export_script):
-        print(f"Error: Export script not found: {export_script}")
-        sys.exit(1)
-    
-#    try:
-#        run_command(
-#            [sys.executable, str(export_script)],
-#            cwd=script_dir,
-#            description="Generating .pte model file"
-#        )
-#    except SystemExit:
-#        print(f"\n❌ Model generation failed. This is likely because PyTorch/ExecuTorch is not installed.")
-#        print(f"For now, using dummy model_pte.h for compilation testing.")
-#        print(f"To generate a real model, install PyTorch and ExecuTorch:")
-#        print(f"  pip install torch")
-#        print(f"  # Install ExecuTorch according to documentation")
-#        print(f"  python build_model.py")
-#        return
-    
-    if not Path(script_dir / pte_file).exists():
-        print(f"Error: Model file {pte_file} was not generated")
-        sys.exit(1)
-    
-    # Step 2: Generate operator definitions
-
-    gen_ops_script = "/home/zephyruser/modules/lib/executorch/codegen/tools/gen_ops_def.py"
-    if not os.path.exists(gen_ops_script):
-        print(f"Error: gen_ops_def.py not found at {gen_ops_script}")
-        sys.exit(1)
-    
-#    run_command(
-#        [sys.executable, str(gen_ops_script), 
-#         "--output_path", ops_def_file,
-#         "--model_file_path", pte_file],
-#        cwd=script_dir,
-#        description="Generating operator definitions"
-#    )
     
     # Step 3: Convert .pte to header file
     #pte_to_header_script = executorch_root / "examples" / "arm" / "executor_runner" / "pte_to_header.py"
@@ -123,27 +81,27 @@ def main():
 
 
     header_path = src_dir / header_file
-    if header_path.exists():
-        content = header_path.read_text()
-        
-        # Remove section attribute and replace with Zephyr alignment macro
-        import re
-        # Replace section+aligned pattern with Zephyr __ALIGN macro
-        content = re.sub(r'__attribute__\s*\(\s*\(\s*section\s*\([^)]*\)\s*,\s*aligned\s*\(([^)]*)\)\s*\)\s*\)\s*', r'__ALIGN(\1) ', content)
-        # Remove any remaining section-only attributes  
-        content = re.sub(r'__attribute__\s*\(\s*\(\s*section\s*\([^)]*\)\s*\)\s*\)\s*', '', content)
-        # Also replace any standalone __attribute__((aligned(n))) with __ALIGN(n)
-        content = re.sub(r'__attribute__\s*\(\s*\(\s*aligned\s*\(([^)]*)\)\s*\)\s*\)\s*', r'__ALIGN(\1) ', content)
-        
-        # Replace 'char model_pte_data[]' with 'const char model_pte_data[]'
-        content = content.replace('char model_pte_data[]', 'const char model_pte_data[]')
-        # Also handle 'char model_pte[]' variant
-        content = content.replace('char model_pte[]', 'const char model_pte[]')
-        
-        header_path.write_text(content)
-        print(f"✓ Made model data const and removed section attributes in {header_file}")
-    else:
-        print(f"Warning: Header file {header_file} not found")
+#    if header_path.exists():
+#        content = header_path.read_text()
+#        
+#        # Remove section attribute and replace with Zephyr alignment macro
+#        import re
+#        # Replace section+aligned pattern with Zephyr __ALIGN macro
+#        content = re.sub(r'__attribute__\s*\(\s*\(\s*section\s*\([^)]*\)\s*,\s*aligned\s*\(([^)]*)\)\s*\)\s*\)\s*', r'__ALIGN(\1) ', content)
+#        # Remove any remaining section-only attributes  
+#        content = re.sub(r'__attribute__\s*\(\s*\(\s*section\s*\([^)]*\)\s*\)\s*\)\s*', '', content)
+#        # Also replace any standalone __attribute__((aligned(n))) with __ALIGN(n)
+#        content = re.sub(r'__attribute__\s*\(\s*\(\s*aligned\s*\(([^)]*)\)\s*\)\s*\)\s*', r'__ALIGN(\1) ', content)
+#        
+#        # Replace 'char model_pte_data[]' with 'const char model_pte_data[]'
+#        content = content.replace('char model_pte_data[]', 'const char model_pte_data[]')
+#        # Also handle 'char model_pte[]' variant
+#        content = content.replace('char model_pte[]', 'const char model_pte[]')
+#        
+#        header_path.write_text(content)
+#        print(f"✓ Made model data const and removed section attributes in {header_file}")
+#    else:
+#        print(f"Warning: Header file {header_file} not found")
     
     print("\n=== Build Summary ===")
     print(f"✓ Generated: {pte_file}")
