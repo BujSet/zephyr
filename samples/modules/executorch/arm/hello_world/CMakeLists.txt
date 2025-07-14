@@ -68,6 +68,8 @@ set(app_sources
 )
 target_sources(app PRIVATE ${app_sources})
 
+zephyr_linker_sources(SECTIONS linker.ld)
+
 # Link with ExecuTorch and our operators library
 target_link_libraries(app PRIVATE 
     libexecutorch

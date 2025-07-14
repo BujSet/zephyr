@@ -6,7 +6,7 @@ name: Arm MPS3-Corstone300-FVP
 type: mcu
 arch: arm
 ram: 512
-flash: 262144
+flash: 512
 simulation:
   - name: armfvp
     exec: FVP_Corstone_SSE-300_Ethos-U55
