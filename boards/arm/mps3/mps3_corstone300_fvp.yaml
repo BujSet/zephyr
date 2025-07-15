@@ -5,7 +5,7 @@ identifier: mps3/corstone300/fvp
 name: Arm MPS3-Corstone300-FVP
 type: mcu
 arch: arm
-ram: 512
+ram: 1024
 flash: 512
 simulation:
   - name: armfvp
