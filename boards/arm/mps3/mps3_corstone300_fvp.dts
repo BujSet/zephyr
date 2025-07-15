@@ -9,6 +9,7 @@
 #include <arm/armv8.1-m.dtsi>
 #include <zephyr/dt-bindings/i2c/i2c.h>
 #include <zephyr/dt-bindings/input/input-event-codes.h>
+#include <zephyr/dt-bindings/memory-attr/memory-attr-arm.h>
 #include <mem.h>
 
 / {
@@ -81,6 +82,28 @@
 		compatible = "zephyr,memory-region", "mmio-sram";
 		reg = <0x31000000 DT_SIZE_M(2)>;
 		zephyr,memory-region = "ISRAM";
+	};
+	ddr4s0: memoryS0@70000000 {
+		device_type = "memory";
+		compatible = "zephyr,memory-region";
+		reg = <0x70000000 DT_SIZE_M(256)>;
+		zephyr,memory-region = "DDR4S0";
+	        status = "okay";
+	};
+	ddr4s1: memoryS1@90000000 {
+		device_type = "memory";
+		compatible = "zephyr,memory-region";
+		reg = <0x90000000 DT_SIZE_M(256)>;
+		zephyr,memory-region = "DDR4S1";
+	        status = "okay";
+	};
+	ddr4s2: memoryS2@b0000000 {
+		device_type = "memory";
+		compatible = "zephyr,memory-region";
+		reg = <0xb0000000 DT_SIZE_M(256)
+		       0xd0000000 DT_SIZE_M(256)>;
+		zephyr,memory-region = "DDR4S2";
+	        status = "okay";
 	};
 	soc {
 		peripheral@50000000 {
