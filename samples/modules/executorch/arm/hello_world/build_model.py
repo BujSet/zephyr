@@ -59,6 +59,22 @@ def main():
             if Path(file_path).exists():
                 Path(file_path).unlink()
                 print(f"Cleaned: {file_path}")
+
+    # Step 1: Generate operator definitions
+    gen_ops_script = "/home/zephyruser/modules/lib/executorch/codegen/tools/gen_ops_def.py"
+    gen_ops_script = Path(gen_ops_script)
+    print(gen_ops_script.resolve())
+    if not gen_ops_script.exists():
+        print(f"Error: gen_ops_def.py not found at {gen_ops_script}")
+        sys.exit(1)
+    
+    #run_command(
+    #    [sys.executable, str(gen_ops_script), 
+    #     "--output_path", str(ops_def_file),
+    #     "--model_file_path", str(pte_file)],
+    #    cwd=script_dir,
+    #    description="Generating operator definitions"
+    #)
     
     # Step 3: Convert .pte to header file
     #pte_to_header_script = executorch_root / "examples" / "arm" / "executor_runner" / "pte_to_header.py"

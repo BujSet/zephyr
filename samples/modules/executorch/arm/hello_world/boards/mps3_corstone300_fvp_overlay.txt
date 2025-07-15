@@ -1,0 +1,23 @@
+/ {
+        chosen {
+                zephyr,code-partition = &slot0_partition;
+        };
+};
+
+&flash0 {
+        partitions {
+                compatible = "fixed-partitions";
+                #address-cells = <1>;
+                #size-cells = <1>;
+
+                code_dts_label: partition@8000 {
+                        label = "zephyr-code";
+                        reg = <0x00008000 0x34000>;
+                };
+
+                data_dts_label: partition@70000 {
+                        label = "application-data";
+                        reg = <0x00070000 0xD000>;
+                };
+        };
+};

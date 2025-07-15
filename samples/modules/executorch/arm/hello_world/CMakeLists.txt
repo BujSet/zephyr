@@ -35,7 +35,18 @@ gen_selected_ops(
     LIB_NAME "hello_world_ops_lib" 
     ROOT_OPS "aten::add.out"
 )
+    #OPS_FROM_MODEL "/home/zephyruser/zephyr/samples/modules/executorch/arm/hello_world/whisper/encoder.pte"
+    #DTYPE_SELECTIVE_BUILD "ON"
+    #OPS_SCHEMA_YAML "/home/zephyruser/zephyr/samples/modules/executorch/arm/hello_world/whisper_dtype_operators.yaml"
     #INCLUDE_ALL_OPS "ON"
+    #ROOT_OPS "aten::add.out"
+
+    # Below uses about 93% of ITCM (512KB) and is an incomplete list of operators
+    #ROOT_OPS "aten::add.out,aten::native_layer_norm.out,aten::gelu.out,aten::clone.out,aten::addmm.out,aten::permute_copy.out,aten::mm.out,aten::mul.Scalar_out"
+
+    # Complete operator list for whisper, but exceeds ITCM memoyr limit of 512 KB
+    #ROOT_OPS "aten::add.out,aten::native_layer_norm.out,aten::gelu.out,aten::clone.out,aten::addmm.out,aten::permute_copy.out,aten::mm.out,aten::mul.Scalar_out,aten::expand_copy.out,aten::bmm.out,aten::_softmax.out,aten::eq.Scalar_out,aten::logical_not.out,aten::any.out,aten::full_like.out,aten::where.self_out"
+    #OPS_FROM_MODEL "/home/zephyruser/zephyr/samples/modules/executorch/arm/hello_world/whisper/encoder.pte"
 	#OPS_SCHEMA_YAML "${OPS_DEF_FILE}"
 	#INCLUDE_ALL_OPS "ON"
 #	OPS_FROM_MODEL "/home/zephyruser/zephyr/samples/modules/executorch/arm/hello_world/add.pte"
@@ -61,8 +72,6 @@ set(EXECUTORCH_OPS_LIB hello_world_ops_lib)
 message(STATUS "Using selective operators library: ${EXECUTORCH_OPS_LIB}")
 
 set(app_sources
-	#src/main.cpp
-	#src/program_loader.cpp
 	src/arm_executor_runner.cpp
 	src/arm_perf_monitor.cpp
 )
