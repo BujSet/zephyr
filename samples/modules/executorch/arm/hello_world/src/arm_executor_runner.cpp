@@ -107,11 +107,15 @@ using executorch::etdump::ETDumpResult;
  * availible memory.
  */
 #if !defined(ET_ARM_BAREMETAL_METHOD_ALLOCATOR_POOL_SIZE)
-#define ET_ARM_BAREMETAL_METHOD_ALLOCATOR_POOL_SIZE (512 * 1024)
+#define ET_ARM_BAREMETAL_METHOD_ALLOCATOR_POOL_SIZE (250 * 1024 * 1024)
 #endif
 const size_t method_allocation_pool_size =
     ET_ARM_BAREMETAL_METHOD_ALLOCATOR_POOL_SIZE;
-unsigned char method_allocation_pool[method_allocation_pool_size];
+unsigned char __attribute__((
+    section("input_data_sec"),
+    aligned(16))) method_allocation_pool[method_allocation_pool_size];
+
+//unsigned char method_allocation_pool[method_allocation_pool_size];
 
 #if defined(ET_BUNDLE_IO)
 
@@ -172,10 +176,12 @@ Result<BufferCleanup> prepare_input_tensors(
     Method& method,
     MemoryAllocator& allocator,
     std::vector<std::pair<char*, size_t>>& input_buffers) {
+  ET_LOG(Info, "Calling method_meta...");
   MethodMeta method_meta = method.method_meta();
+  ET_LOG(Info, "Calling method_meta.num_inputs...");
   size_t num_inputs = method_meta.num_inputs();
   size_t num_allocated = 0;
-  ET_LOG(Info, "Preparing input tensor....");
+  ET_LOG(Info, "Preparing input tensors....");
 
 #if defined(SEMIHOSTING)
   ET_CHECK_OR_RETURN_ERROR(
@@ -184,6 +190,7 @@ Result<BufferCleanup> prepare_input_tensors(
       "Wrong number of inputs allocated compared to method");
 #endif
 
+  ET_LOG(Info, "Attempting to allocate %zu bytes", num_inputs*sizeof(void*));
   void** inputs =
       static_cast<void**>(allocator.allocate(num_inputs * sizeof(void*)));
   ET_CHECK_OR_RETURN_ERROR(
@@ -513,8 +520,8 @@ int main(int argc, const char* argv[]) {
       method_allocator.used_size() - method_loaded_membase;
   ET_LOG(Info, "Method '%s' loaded.", method_name);
 
-  ET_LOG(Info, "Preparing inputs...");
   size_t input_membase = method_allocator.used_size();
+  ET_LOG(Info, "Preparing input, bytes in use:%zu, bytes free %zu", input_membase, method_allocator.free_size());
 
 #if defined(ET_BUNDLE_IO)
   if (bundle_io) {
@@ -534,6 +541,7 @@ int main(int argc, const char* argv[]) {
     // Get inputs from SEMIHOSTING or fake it with a lot of "1"
     // Use "static" to force to compiler to remove this when it goes out of
     // scope
+    ET_LOG(Info, "Calling prepare_input_tensors...");
     static auto prepared_inputs =
         ::prepare_input_tensors(*method, method_allocator, input_buffers);
 
