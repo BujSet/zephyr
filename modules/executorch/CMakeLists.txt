@@ -48,7 +48,7 @@ include_directories(${EXECUTORCH_PARENT_DIR})
 # dependencies with Zephyr's build system. Instead, we'll add the PAL source 
 # directly to our final library.
 
-set(EXECUTORCH_BUILD_EXECUTORCH_PYBIND OFF)
+set(EXECUTORCH_BUILD_EXECUTORCH_PYBIND ON)
 set(EXECUTORCH_BUILD_GENERATED_SRC OFF)
 set(EXECUTORCH_BUILD_SDK OFF)
 #set(EXECUTORCH_BUILD_TESTS OFF)
