@@ -21,7 +21,7 @@
 		zephyr,console = &uart0;
 		zephyr,shell-uart = &uart0;
 		zephyr,sram = &sram;
-		zephyr,flash = &slot0_partition;//&itcm;
+		zephyr,flash = &itcm;
                 //zephyr,code-partition = &itcm; //&slot0_partition;
 	};
 
@@ -63,7 +63,7 @@
 	 */
 	itcm: itcm@10000000 {	/* alias @ 0x0 */
 		compatible = "zephyr,memory-region";
-		reg = <0x10000000 DT_SIZE_K(1024)>;
+		reg = <0x10000000 DT_SIZE_K(512)>;
 		zephyr,memory-region = "ITCM";
 	};
 
