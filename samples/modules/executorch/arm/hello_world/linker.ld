@@ -15,6 +15,7 @@ GROUP_START(DDR4S0)
 
 GROUP_END(DDR4S0)
 #endif
+
 #if DT_NODE_HAS_STATUS(DT_NODELABEL(ddr4s1), okay)
 GROUP_START(DDR4S1)
 
@@ -25,4 +26,16 @@ GROUP_START(DDR4S1)
 	} GROUP_LINK_IN(DDR4S1)
 
 GROUP_END(DDR4S1)
+#endif
+
+#if DT_NODE_HAS_STATUS(DT_NODELABEL(isram), okay)
+GROUP_START(ISRAM)
+
+	SECTION_DATA_PROLOGUE(_ISRAM_SECTION_NAME,,SUBALIGN(16))
+	{
+		. = ALIGN(16);
+		*(kernels_portable_cpu_op_addmm_out kernels_portable_cpu_op_add_out registered_kernels_data_sec)
+	} GROUP_LINK_IN(ISRAM)
+
+GROUP_END(ISRAM)
 #endif
