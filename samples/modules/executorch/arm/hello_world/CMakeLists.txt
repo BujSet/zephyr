@@ -6,7 +6,7 @@ set(CONF_FILE "${CMAKE_CURRENT_SOURCE_DIR}/prj.conf;${CMAKE_CURRENT_SOURCE_DIR}/
 find_package(Zephyr REQUIRED HINTS $ENV{ZEPHYR_BASE})
 project(executorch_hello_world)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-switch -Wno-float-conversion -Wno-double-promotion")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-switch -Wno-float-conversion -Wno-double-promotion -ffunction-sections")
 
 # Always use selective build since embedded devices are resource constrained
     
@@ -91,6 +91,7 @@ if (CONFIG_CODE_DATA_RELOCATION)
     #zephyr_code_relocate(LIBRARY libexecutorch LOCATION DDR4S3)
     #zephyr_code_relocate(FILES ${app_sources} LOCATION ISRAM_TEXT_RODATA_DATA NOKEEP)
     #zephyr_code_relocate(LIBRARY app LOCATION ISRAM_TEXT_RODATA_DATA NOKEEP)
+    #zephyr_code_relocate(LIBRARY libc LOCATION ISRAM_TEXT_RODATA_DATA NOKEEP)
     zephyr_code_relocate(LIBRARY ${EXECUTORCH_OPS_LIB} LOCATION ISRAM_TEXT_RODATA_DATA NOKEEP)
     zephyr_code_relocate(LIBRARY libexecutorch LOCATION ISRAM_TEXT_RODATA_DATA NOKEEP)
     zephyr_code_relocate(LIBRARY zephyr LOCATION ISRAM_TEXT_RODATA_DATA NOKEEP)
@@ -147,4 +148,5 @@ target_link_libraries(app PRIVATE
 
 # Add include directory for generated headers
 target_include_directories(app PRIVATE src) 
-
+get_target_property(OUT app LINK_LIBRARIES)
+message(STATUS ${OUT})
