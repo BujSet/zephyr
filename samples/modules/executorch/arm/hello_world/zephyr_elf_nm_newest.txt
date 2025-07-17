@@ -1,4 +1,4 @@
-nm -S --size-sort --reverse-sort -Cr build/zephyr/zephyr.elf | tee zephyr_elf_nm_newest.txt
+nm -S --size-sort --reverse-sort -Cr build/zephyr/zephyr.elf | tee zephyr_elf_nm_newest0.txt
 90000000 0fa00000 D method_allocation_pool
 11005e30 00008000 B kheap__system_heap
 310374e0 00005dc0 t executorch::runtime::(anonymous namespace)::registered_kernels_data
