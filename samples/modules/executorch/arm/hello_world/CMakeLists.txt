@@ -33,7 +33,7 @@ include(${EXECUTORCH_DIR}/tools/cmake/Codegen.cmake)
 # Generate selective operators library
 gen_selected_ops(
     LIB_NAME "hello_world_ops_lib" 
-    ROOT_OPS "aten::add.out,aten::native_layer_norm.out,aten::gelu.out,aten::clone.out,aten::addmm.out,aten::permute_copy.out,aten::mm.out,aten::mul.Scalar_out,aten::expand_copy.out,aten::bmm.out,aten::_softmax.out,aten::eq.Scalar_out"
+    ROOT_OPS "aten::add.out,aten::native_layer_norm.out,aten::gelu.out,aten::clone.out,aten::addmm.out,aten::permute_copy.out,aten::mm.out"
 )
     #OPS_FROM_MODEL "/home/zephyruser/zephyr/samples/modules/executorch/arm/hello_world/whisper/encoder.pte"
     #DTYPE_SELECTIVE_BUILD "ON"
@@ -92,14 +92,15 @@ if (CONFIG_CODE_DATA_RELOCATION)
     #zephyr_code_relocate(FILES ${app_sources} LOCATION ISRAM_TEXT_RODATA_DATA NOKEEP)
     #zephyr_code_relocate(LIBRARY app LOCATION ISRAM_TEXT_RODATA_DATA NOKEEP)
     #zephyr_code_relocate(LIBRARY libc LOCATION ISRAM_TEXT_RODATA_DATA NOKEEP)
-    zephyr_code_relocate(LIBRARY ${EXECUTORCH_OPS_LIB} LOCATION ISRAM_TEXT_RODATA_DATA NOKEEP)
-    zephyr_code_relocate(LIBRARY libexecutorch LOCATION ISRAM_TEXT_RODATA_DATA NOKEEP)
-    zephyr_code_relocate(LIBRARY zephyr LOCATION ISRAM_TEXT_RODATA_DATA NOKEEP)
+    #zephyr_code_relocate(LIBRARY ${EXECUTORCH_OPS_LIB} LOCATION ISRAM_TEXT_RODATA_DATA NOKEEP)
+    #zephyr_code_relocate(LIBRARY libexecutorch LOCATION ISRAM_TEXT_RODATA_DATA NOKEEP)
+    #zephyr_code_relocate(LIBRARY zephyr LOCATION ISRAM_TEXT_RODATA_DATA NOKEEP)
 
     file(GLOB_RECURSE ET_SRC_FILES ${EXECUTORCH_ROOT}/*.cpp ${EXECUTORCH_ROOT}/*.hpp ${EXECUTORCH_ROOT}/*.c)
-    zephyr_code_relocate(FILES ${ET_SRC_FILES} LOCATION ISRAM_TEXT_RODATA_DATA NOKEEP)
-    file(GLOB_RECURSE APP_SRC_FILES src/*.cpp)
-    zephyr_code_relocate(FILES ${APP_SRC_FILES} LOCATION ISRAM_TEXT_RODATA_DATA NOKEEP)
+    zephyr_code_relocate(FILES ${ET_SRC_FILES} LOCATION ISRAM_TEXT_RODATA_DATA) #NOCOPY)
+    #file(GLOB_RECURSE APP_SRC_FILES src/*.cpp)
+    #zephyr_code_relocate(FILES ${APP_SRC_FILES} LOCATION ISRAM_TEXT_RODATA_DATA NOKEEP)
+
     #file(GLOB_RECURSE Z_SRC_FILES $ENV{ZEPHYR_BASE}/*.cpp $ENV{ZEPHYR_BASE}/*.hpp $ENV{ZEPHYR_BASE}/*.c)
     #zephyr_code_relocate(FILES ${Z_SRC_FILES} LOCATION ISRAM_TEXT_RODATA_DATA NOKEEP)
     #file(GLOB op_source_files "${EXECUTORCH_ROOT}/kernels/portable/cpu/*.cpp")

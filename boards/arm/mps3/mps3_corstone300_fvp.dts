@@ -79,7 +79,7 @@
 		zephyr,memory-region = "DTCM";
 	};
 
-	isram: sram@31000000 {/* alias @ 0x21000000 */
+	isram: isram@31000000 {/* alias @ 0x21000000 */
 		compatible = "zephyr,memory-region", "mmio-sram";
 		reg = <0x31000000 DT_SIZE_M(2)>;
 		zephyr,memory-region = "ISRAM";
@@ -105,10 +105,10 @@
 	};
 	ddr4s2: memoryS2@b0000000 {
 		device_type = "memory";
-		compatible = "zephyr,memory-region";
+		compatible = "zephyr,memory-region", "linkable-memory";
 		reg = <0xb0000000 DT_SIZE_M(256)>;
 		zephyr,memory-region = "DDR4S2";
-                zephyr,memory-attr = <( DT_MEM_ARM(ATTR_MPU_RAM) )>;
+                zephyr,memory-attr = <( DT_MEM_ARM(ATTR_MPU_RAM_PXN) )>;
 		zephyr,memory-region-flags = "xr";
 	        status = "okay";
 	};
