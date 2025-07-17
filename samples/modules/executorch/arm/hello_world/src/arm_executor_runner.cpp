@@ -604,10 +604,11 @@ int main(int argc, const char* argv[]) {
 
   ET_LOG(Info, "Starting the model execution...");
   size_t executor_membase = method_allocator.used_size();
-  StartMeasurements();
+  ET_LOG(Info, " executor_membase: %zu", executor_membase);
+  //StartMeasurements();
   // Run the model.
   Error status = method->execute();
-  StopMeasurements();
+  //StopMeasurements();
   size_t executor_memsize = method_allocator.used_size() - executor_membase;
 
   ET_LOG(Info, "model_pte_program_size:     %lu bytes.", program_data_len);
