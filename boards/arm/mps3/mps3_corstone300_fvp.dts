@@ -22,7 +22,6 @@
 		zephyr,shell-uart = &uart0;
 		zephyr,sram = &sram;
 		zephyr,flash = &itcm;
-                //zephyr,code-partition = &itcm; //&slot0_partition;
 	};
 
 	cpus {
@@ -91,7 +90,6 @@
 		reg = <0x70000000 DT_SIZE_M(256)>;
 		zephyr,memory-region = "DDR4S0";
                 zephyr,memory-attr = <( DT_MEM_ARM(ATTR_MPU_RAM) )>;
-		//zephyr,memory-region-flags = "xw";
 	        status = "okay";
 	};
 	ddr4s1: memoryS1@90000000 {
@@ -100,17 +98,14 @@
 		reg = <0x90000000 DT_SIZE_M(256)>;
 		zephyr,memory-region = "DDR4S1";
                 zephyr,memory-attr = <( DT_MEM_ARM(ATTR_MPU_RAM) )>;
-		//zephyr,memory-region-flags = "xw";
 	        status = "okay";
 	};
 	ddr4s2: memoryS2@b0000000 {
 		device_type = "memory";
 		compatible = "zephyr,memory-region"; 
-//, "linkable-memory";
 		reg = <0xb0000000 DT_SIZE_M(256)>;
 		zephyr,memory-region = "DDR4S2";
-                zephyr,memory-attr = <( DT_MEM_ARM(ATTR_MPU_FLASH) )>; //  ATTR_MPU_RAM_PXN) )>;
-		//zephyr,memory-region-flags = "xr";
+                zephyr,memory-attr = <( DT_MEM_ARM(ATTR_MPU_FLASH) )>;
 	        status = "okay";
 	};
 	ddr4s3: memoryS3@d0000000 {
@@ -119,28 +114,9 @@
 		reg = <0xd0000000 DT_SIZE_M(256)>;
 		zephyr,memory-region = "DDR4S3";
                 zephyr,memory-attr = <( DT_MEM_ARM(ATTR_MPU_RAM) )>;
-		//zephyr,memory-region-flags = "xw";
 	        status = "okay";
 	};
 
-/*
-        flash0 {
-	partitions {
-		compatible = "fixed-partitions";
-		#address-cells = <1>;
-		#size-cells = <1>;
-
-		slot0_partition: partition@38000000 {
-			label = "image-0";
-			reg = <0x38000000 0x100000>;
-		};
-		slot1_partition: partition@82000 {
-			label = "image-1";
-			reg = <0x00082000 0x00076000>;
-		};
-	};
-};
-*/
 	soc {
 		peripheral@50000000 {
 			#address-cells = <1>;
