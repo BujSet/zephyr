@@ -6,7 +6,7 @@ set(CONF_FILE "${CMAKE_CURRENT_SOURCE_DIR}/prj.conf;${CMAKE_CURRENT_SOURCE_DIR}/
 find_package(Zephyr REQUIRED HINTS $ENV{ZEPHYR_BASE})
 project(executorch_hello_world)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-switch -Wno-float-conversion -Wno-double-promotion -ffunction-sections")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-switch -Wno-float-conversion -Wno-double-promotion -ffunction-sections -fdata-sections")
 
 # Always use selective build since embedded devices are resource constrained
     
@@ -33,8 +33,9 @@ include(${EXECUTORCH_DIR}/tools/cmake/Codegen.cmake)
 # Generate selective operators library
 gen_selected_ops(
     LIB_NAME "hello_world_ops_lib" 
-    ROOT_OPS "aten::add.out,aten::native_layer_norm.out,aten::gelu.out,aten::clone.out,aten::addmm.out,aten::permute_copy.out,aten::mm.out"
+    ROOT_OPS "aten::_softmax.out,aten::add.out,aten::addmm.out,aten::any.out,aten::bmm.out,aten::clone.out,aten::convolution.out,aten::eq.Scalar_out,aten::expand_copy.out,aten::full_like.out,aten::gelu.out,aten::logical_not.out,aten::mm.out,aten::mul.Scalar_out,aten::native_layer_norm.out,aten::permute_copy.out,aten::where.self_out"
 )
+    #",aten::native_layer_norm.out,aten::gelu.out,aten::clone.out,aten::permute_copy.out,aten::mm.out"
     #OPS_FROM_MODEL "/home/zephyruser/zephyr/samples/modules/executorch/arm/hello_world/whisper/encoder.pte"
     #DTYPE_SELECTIVE_BUILD "ON"
     #OPS_SCHEMA_YAML "/home/zephyruser/zephyr/samples/modules/executorch/arm/hello_world/whisper_dtype_operators.yaml"
@@ -45,7 +46,7 @@ gen_selected_ops(
     #ROOT_OPS "aten::add.out,aten::native_layer_norm.out,aten::gelu.out,aten::clone.out,aten::addmm.out,aten::permute_copy.out,aten::mm.out,aten::mul.Scalar_out"
 
     # Complete operator list for whisper, but exceeds ITCM memory limit of 512 KB
-    #ROOT_OPS "aten::add.out,aten::native_layer_norm.out,aten::gelu.out,aten::clone.out,aten::addmm.out,aten::permute_copy.out,aten::mm.out,aten::mul.Scalar_out,aten::expand_copy.out,aten::bmm.out,aten::_softmax.out,aten::eq.Scalar_out,aten::logical_not.out,aten::any.out,aten::full_like.out,aten::where.self_out"
+    #ROOT_OPS "aten::_softmax.out,aten::add.out,aten::addmm.out,aten::any.out,aten::bmm.out,aten::clone.out,aten::convolution.out,aten::eq.Scalar_out,aten::expand_copy.out,aten::full_like.out,aten::gelu.out,aten::logical_not.out,aten::mm.out,aten::mul.Scalar_out,aten::native_layer_norm.out,aten::permute_copy.out,aten::where.self_out"
     #OPS_FROM_MODEL "/home/zephyruser/zephyr/samples/modules/executorch/arm/hello_world/whisper/encoder.pte"
 	#OPS_SCHEMA_YAML "${OPS_DEF_FILE}"
 	#INCLUDE_ALL_OPS "ON"
@@ -96,8 +97,8 @@ if (CONFIG_CODE_DATA_RELOCATION)
     #zephyr_code_relocate(LIBRARY libexecutorch LOCATION ISRAM_TEXT_RODATA_DATA NOKEEP)
     #zephyr_code_relocate(LIBRARY zephyr LOCATION ISRAM_TEXT_RODATA_DATA NOKEEP)
 
-    file(GLOB_RECURSE ET_SRC_FILES ${EXECUTORCH_ROOT}/*.cpp ${EXECUTORCH_ROOT}/*.hpp ${EXECUTORCH_ROOT}/*.c)
-    zephyr_code_relocate(FILES ${ET_SRC_FILES} LOCATION ISRAM_TEXT_RODATA_DATA) #NOCOPY)
+    #file(GLOB_RECURSE ET_SRC_FILES ${EXECUTORCH_ROOT}/*.cpp ${EXECUTORCH_ROOT}/*.hpp ${EXECUTORCH_ROOT}/*.c)
+    #zephyr_code_relocate(FILES ${ET_SRC_FILES} LOCATION DDR4S2_TEXT_RODATA_DATA NOCOPY)
     #file(GLOB_RECURSE APP_SRC_FILES src/*.cpp)
     #zephyr_code_relocate(FILES ${APP_SRC_FILES} LOCATION ISRAM_TEXT_RODATA_DATA NOKEEP)
 
@@ -108,7 +109,31 @@ if (CONFIG_CODE_DATA_RELOCATION)
     #file(GLOB op_util_source_files "${EXECUTORCH_ROOT}/kernels/portable/cpu/util/*.cpp")
     #zephyr_code_relocate(FILES ${op_util_source_files} LOCATION ISRAM_TEXT_RODATA_DATA NOKEEP)
 
-    #zephyr_code_relocate(FILES ${EXECUTORCH_ROOT}/kernels/portable/cpu/*.cpp LOCATION ISRAM_TEXT_RODATA_DATA NOKEEP)
+    # This part works -----V-----
+    #zephyr_code_relocate(FILES ${EXECUTORCH_ROOT}/kernels/portable/cpu/op_add.cpp LOCATION DDR4S2_TEXT_RODATA NOCOPY)
+    #zephyr_code_relocate(FILES ${EXECUTORCH_ROOT}/kernels/portable/cpu/op_addmm.cpp LOCATION DDR4S2_TEXT_RODATA NOCOPY)
+    #zephyr_code_relocate(FILES ${EXECUTORCH_ROOT}/kernels/portable/cpu/op_any.cpp LOCATION DDR4S2_TEXT_RODATA NOCOPY)
+    #zephyr_code_relocate(FILES ${EXECUTORCH_ROOT}/kernels/portable/cpu/op_bmm.cpp LOCATION DDR4S2_TEXT_RODATA NOCOPY)
+    #zephyr_code_relocate(FILES ${EXECUTORCH_ROOT}/kernels/portable/cpu/op_eq.cpp LOCATION DDR4S2_TEXT_RODATA NOCOPY)
+    #zephyr_code_relocate(FILES ${EXECUTORCH_ROOT}/kernels/portable/cpu/op_expand_copy.cpp LOCATION DDR4S2_TEXT_RODATA NOCOPY)
+    #zephyr_code_relocate(FILES ${EXECUTORCH_ROOT}/kernels/portable/cpu/op_full_like.cpp LOCATION DDR4S2_TEXT_RODATA NOCOPY)
+    #zephyr_code_relocate(FILES ${EXECUTORCH_ROOT}/kernels/portable/cpu/op_gelu.cpp LOCATION DDR4S2_TEXT_RODATA NOCOPY)
+    #zephyr_code_relocate(FILES ${EXECUTORCH_ROOT}/kernels/portable/cpu/op_logical_not.cpp LOCATION DDR4S2_TEXT_RODATA NOCOPY)
+    #zephyr_code_relocate(FILES ${EXECUTORCH_ROOT}/kernels/portable/cpu/op_mm.cpp LOCATION DDR4S2_TEXT_RODATA NOCOPY)
+    #zephyr_code_relocate(FILES ${EXECUTORCH_ROOT}/kernels/portable/cpu/op_mul.cpp LOCATION DDR4S2_TEXT_RODATA NOCOPY)
+    #zephyr_code_relocate(FILES ${EXECUTORCH_ROOT}/kernels/portable/cpu/op_native_layer_norm.cpp LOCATION DDR4S2_TEXT_RODATA NOCOPY)
+    #zephyr_code_relocate(FILES ${EXECUTORCH_ROOT}/kernels/portable/cpu/op_permute_copy.cpp LOCATION DDR4S2_TEXT_RODATA NOCOPY)
+    #zephyr_code_relocate(FILES ${EXECUTORCH_ROOT}/kernels/portable/cpu/op_softmax.cpp LOCATION DDR4S2_TEXT_RODATA NOCOPY)
+    #zephyr_code_relocate(FILES ${EXECUTORCH_ROOT}/kernels/portable/cpu/op_where.cpp LOCATION DDR4S2_TEXT_RODATA NOCOPY)
+
+    file(GLOB_RECURSE ET_OP_SRC_FILES ${EXECUTORCH_ROOT}/op_*.cpp )
+    zephyr_code_relocate(FILES ${ET_OP_SRC_FILES} LOCATION DDR4S2_TEXT_RODATA NOCOPY)
+    #zephyr_code_relocate(FILES ${EXECUTORCH_ROOT}/runtime/kernel/operator_registry.cpp LOCATION DDR4S2_BSS NOCOPY)
+
+
+    #zephyr_code_relocate(FILES ${EXECUTORCH_ROOT}/runtime/kernel/operator_registry.cpp LOCATION DDR4S2_DATA_BSS NOCOPY)
+    #zephyr_code_relocate(FILES $ENV{ZEPHYR_BASE}/samples/modules/executorch/arm/hello_world/src/arm_executor_runnner.cpp LOCATION DDR4S2_DATA_BSS NOCOPY)
+
     #zephyr_code_relocate(FILES ${EXECUTORCH_ROOT}/kernels/portable/cpu/op_mm.cpp LOCATION ISRAM_TEXT_RODATA_DATA NOKEEP)
     #zephyr_code_relocate(FILES ${EXECUTORCH_ROOT}/kernels/portable/cpu/op_permute_copy.cpp LOCATION ISRAM_TEXT_RODATA_DATA NOKEEP)
     #zephyr_code_relocate(FILES ${EXECUTORCH_ROOT}/kernels/portable/cpu/op_mul.cpp LOCATION ISRAM_TEXT_RODATA_DATA NOKEEP)

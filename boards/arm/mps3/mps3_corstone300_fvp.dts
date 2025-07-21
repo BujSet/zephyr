@@ -105,11 +105,12 @@
 	};
 	ddr4s2: memoryS2@b0000000 {
 		device_type = "memory";
-		compatible = "zephyr,memory-region", "linkable-memory";
+		compatible = "zephyr,memory-region"; 
+//, "linkable-memory";
 		reg = <0xb0000000 DT_SIZE_M(256)>;
 		zephyr,memory-region = "DDR4S2";
-                zephyr,memory-attr = <( DT_MEM_ARM(ATTR_MPU_RAM_PXN) )>;
-		zephyr,memory-region-flags = "xr";
+                zephyr,memory-attr = <( DT_MEM_ARM(ATTR_MPU_FLASH) )>; //  ATTR_MPU_RAM_PXN) )>;
+		//zephyr,memory-region-flags = "xr";
 	        status = "okay";
 	};
 	ddr4s3: memoryS3@d0000000 {

@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+
 #if DT_NODE_HAS_STATUS(DT_NODELABEL(ddr4s0), okay)
 GROUP_START(DDR4S0)
 
@@ -28,6 +29,7 @@ GROUP_START(DDR4S1)
 GROUP_END(DDR4S1)
 #endif
 
+/*
 #if DT_NODE_HAS_STATUS(DT_NODELABEL(isram), okay)
 GROUP_START(ISRAM)
 
@@ -54,3 +56,4 @@ GROUP_START(ISRAM)
 
 GROUP_END(ISRAM)
 #endif
+*/
