@@ -33,8 +33,9 @@ include(${EXECUTORCH_DIR}/tools/cmake/Codegen.cmake)
 # Generate selective operators library
 gen_selected_ops(
     LIB_NAME "hello_world_ops_lib" 
-    ROOT_OPS "aten::_softmax.out,aten::add.out,aten::addmm.out,aten::any.out,aten::bmm.out,aten::clone.out,aten::convolution.out,aten::eq.Scalar_out,aten::expand_copy.out,aten::full_like.out,aten::gelu.out,aten::logical_not.out,aten::mm.out,aten::mul.Scalar_out,aten::native_layer_norm.out,aten::permute_copy.out,aten::where.self_out"
+    ROOT_OPS "aten::add.out"
 )
+    #ROOT_OPS "aten::_softmax.out,aten::add.out,aten::addmm.out,aten::any.out,aten::bmm.out,aten::clone.out,aten::convolution.out,aten::eq.Scalar_out,aten::expand_copy.out,aten::full_like.out,aten::gelu.out,aten::logical_not.out,aten::mm.out,aten::mul.Scalar_out,aten::native_layer_norm.out,aten::permute_copy.out,aten::where.self_out"
     #OPS_FROM_MODEL "/home/zephyruser/zephyr/samples/modules/executorch/arm/hello_world/whisper/encoder.pte"
 	#OPS_SCHEMA_YAML "${OPS_DEF_FILE}"
 	#INCLUDE_ALL_OPS "ON"
@@ -62,8 +63,10 @@ message(STATUS "Using selective operators library: ${EXECUTORCH_OPS_LIB}")
 
 set(app_sources
 	src/arm_executor_runner.cpp
-	src/arm_perf_monitor.cpp
+        ${EXECUTORCH_DIR}/examples/arm/executor_runner/arm_memory_allocator.cpp
+        ${EXECUTORCH_DIR}/examples/arm/executor_runner/arm_perf_monitor.cpp
 )
+	#${EXECUTORCH_DIR}/runtime/platform/default/arm_zephyr.cpp
 target_sources(app PRIVATE ${app_sources})
 
 zephyr_linker_sources(SECTIONS linker.ld)
