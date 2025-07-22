@@ -7,6 +7,8 @@
  */
 
 #include <errno.h>
+#include <executorch/examples/arm/executor_runner/arm_memory_allocator.h>
+#include <executorch/examples/arm/executor_runner/arm_perf_monitor.h>
 #include <executorch/extension/data_loader/buffer_data_loader.h>
 #include <executorch/extension/runner_util/inputs.h>
 #include <executorch/runtime/core/memory_allocator.h>
@@ -21,8 +23,6 @@
 #include <zephyr/kernel.h>
 #include <zephyr/sys/printk.h>
 
-#include "arm_perf_monitor.h"
-#include "arm_memory_allocator.hpp"
 #include "arm_zephyr_pal.hpp"
 
 #if defined(ET_BUNDLE_IO)

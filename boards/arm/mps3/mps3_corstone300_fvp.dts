@@ -113,7 +113,7 @@
 		compatible = "zephyr,memory-region";
 		reg = <0xd0000000 DT_SIZE_M(256)>;
 		zephyr,memory-region = "DDR4S3";
-                zephyr,memory-attr = <( DT_MEM_ARM(ATTR_MPU_RAM) )>;
+                zephyr,memory-attr = <( DT_MEM_ARM(ATTR_MPU_FLASH) )>;
 	        status = "okay";
 	};
 
