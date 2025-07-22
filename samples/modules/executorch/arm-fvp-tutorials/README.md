@@ -23,7 +23,7 @@ docker pull rselagam/zephyr-armfvp:v1
 ### Linux/macOS
 
 ```
-docker run --rm -it --entrypoint /bin/bash  --net=host -v "$(pwd)"/workspace:/workspace -w home/zephyruser/ rselagam/zephyr-armfvp:v1
+docker run --rm -it --entrypoint /bin/bash  --net=host -v "$(pwd)"/workspace:/workspace -w /home/zephyruser/ rselagam/zephyr-armfvp:v1
 ```
 
 ### Windows (PowerShell)
@@ -57,6 +57,7 @@ export PYTHONPATH=/home/zephyruser/modules/lib
 
 ```
 cd /home/zephyruser/modules/lib/executorch/
+./install_requirements.sh
 ./examples/arm/setup.sh --i-agree-to-the-contained-eula  --target-toolchain zephyr
 source /home/zephyruser/modules/lib/executorch/examples/arm/ethos-u-scratch/setup_path.sh
 ```
@@ -64,7 +65,7 @@ source /home/zephyruser/modules/lib/executorch/examples/arm/ethos-u-scratch/setu
 ## Building the elf
 
 ```
-cd /home/zephyruser/zephyr/samples/modules/executorch/arm/hello_world
+cd /home/zephyruser/zephyr/samples/modules/executorch/arm
 west build -p always -b mps3/corstone300/an547
 ```
 ## Running a model in the simulator
