@@ -33,7 +33,7 @@ include(${EXECUTORCH_DIR}/tools/cmake/Codegen.cmake)
 # Generate selective operators library
 gen_selected_ops(
     LIB_NAME "hello_world_ops_lib" 
-    ROOT_OPS "aten::add.out"
+    INCLUDE_ALL_OPS "ON"
 )
     #ROOT_OPS "aten::_softmax.out,aten::add.out,aten::addmm.out,aten::any.out,aten::bmm.out,aten::clone.out,aten::convolution.out,aten::eq.Scalar_out,aten::expand_copy.out,aten::full_like.out,aten::gelu.out,aten::logical_not.out,aten::mm.out,aten::mul.Scalar_out,aten::native_layer_norm.out,aten::permute_copy.out,aten::where.self_out"
     #OPS_FROM_MODEL "/home/zephyruser/zephyr/samples/modules/executorch/arm/hello_world/whisper/encoder.pte"
