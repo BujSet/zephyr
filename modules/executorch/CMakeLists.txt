@@ -386,8 +386,11 @@ endif()
 zephyr_library_named(libexecutorch)
 
 # Link ExecuTorch libraries
+include(${EXECUTORCH_DIR}/tools/cmake/Utils.cmake)
+kernel_link_options(executorch_delegate_ethos_u)
 target_link_libraries(libexecutorch PUBLIC
 	executorch_core
+	executorch_delegate_ethos_u
 )
 
 # Only link portable_ops_lib if it was built (i.e., if portable ops are enabled)

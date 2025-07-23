@@ -33,8 +33,9 @@ include(${EXECUTORCH_DIR}/tools/cmake/Codegen.cmake)
 # Generate selective operators library
 gen_selected_ops(
     LIB_NAME "hello_world_ops_lib" 
-    INCLUDE_ALL_OPS "ON"
+    ROOT_OPS "aten::add.out"
 )
+    #INCLUDE_ALL_OPS "ON"
     #ROOT_OPS "aten::_softmax.out,aten::add.out,aten::addmm.out,aten::any.out,aten::bmm.out,aten::clone.out,aten::convolution.out,aten::eq.Scalar_out,aten::expand_copy.out,aten::full_like.out,aten::gelu.out,aten::logical_not.out,aten::mm.out,aten::mul.Scalar_out,aten::native_layer_norm.out,aten::permute_copy.out,aten::where.self_out"
     #OPS_FROM_MODEL "/home/zephyruser/zephyr/samples/modules/executorch/arm/hello_world/whisper/encoder.pte"
 	#OPS_SCHEMA_YAML "${OPS_DEF_FILE}"
@@ -75,13 +76,16 @@ if (CONFIG_CODE_DATA_RELOCATION)
     zephyr_code_relocate(FILES ${ET_OP_SRC_FILES} LOCATION DDR4S2_TEXT_RODATA NOCOPY)
 endif()
 
+#kernel_link_options(executorch_delegate_ethos_u)
+kernel_link_options(${EXECUTORCH_OPS_LIB})
+#kernel_link_options(executorch)
 # Link with ExecuTorch and our operators library
 target_link_libraries(app PRIVATE 
     libexecutorch
     ${EXECUTORCH_OPS_LIB}
-    executorch_delegate_ethos_u
-    portable_kernels
 )
+    #executorch
+    #executorch_delegate_ethos_u
 
 # Add include directory for generated headers
 target_include_directories(app PRIVATE src) 
