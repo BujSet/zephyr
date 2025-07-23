@@ -23,8 +23,6 @@
 #include <zephyr/kernel.h>
 #include <zephyr/sys/printk.h>
 
-#include "arm_zephyr_pal.hpp"
-
 #if defined(ET_BUNDLE_IO)
 #include <executorch/devtools/bundled_program/bundled_program.h>
 #endif

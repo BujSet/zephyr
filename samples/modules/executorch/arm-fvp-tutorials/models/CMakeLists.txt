@@ -58,8 +58,8 @@ set(app_sources
 	src/arm_executor_runner.cpp
         ${EXECUTORCH_DIR}/examples/arm/executor_runner/arm_memory_allocator.cpp
         ${EXECUTORCH_DIR}/examples/arm/executor_runner/arm_perf_monitor.cpp
+	${EXECUTORCH_DIR}/runtime/platform/default/arm_zephyr.cpp
 )
-	#${EXECUTORCH_DIR}/runtime/platform/default/arm_zephyr.cpp
 target_sources(app PRIVATE ${app_sources})
 
 zephyr_linker_sources(SECTIONS linker.ld)
