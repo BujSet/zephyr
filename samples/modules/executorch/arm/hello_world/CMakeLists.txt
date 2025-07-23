@@ -79,6 +79,8 @@ endif()
 target_link_libraries(app PRIVATE 
     libexecutorch
     ${EXECUTORCH_OPS_LIB}
+    executorch_delegate_ethos_u
+    portable_kernels
 )
 
 # Add include directory for generated headers
