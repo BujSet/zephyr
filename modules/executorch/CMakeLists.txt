@@ -86,6 +86,7 @@ else()
 	set(EXECUTORCH_BUILD_CORTEX_M OFF)
 	set(EXECUTORCH_BUILD_XNNPACK OFF)
 endif()
+set(EXECUTORCH_BUILD_EXTENSION_RUNNER_UTIL ON)
 
 # Suppress noisy ABI warnings from GCC that are not relevant when building
 # from source.
