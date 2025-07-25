@@ -77,7 +77,7 @@ if (CONFIG_CODE_DATA_RELOCATION)
 endif()
 
 #kernel_link_options(executorch_delegate_ethos_u)
-kernel_link_options(${EXECUTORCH_OPS_LIB})
+executorch_kernel_link_options(${EXECUTORCH_OPS_LIB})
 #kernel_link_options(executorch)
 # Link with ExecuTorch and our operators library
 target_link_libraries(app PRIVATE 
