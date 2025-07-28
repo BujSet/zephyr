@@ -382,6 +382,118 @@ if(CONFIG_EXECUTORCH_BACKEND_ARM)
 	endforeach()
 endif()
 
+option(FETCH_ETHOS_U_CONTENT "Fetch ethos_u dependencies instead of relying on pre-downloads" ON)
+set(ET_DIR_PATH
+	"${EXECUTORCH_DIR}"
+    CACHE PATH "Path to ExecuTorch dir"
+)
+set(ETHOS_SDK_PATH
+    "${ET_DIR_PATH}/examples/arm/ethos-u-scratch/ethos-u"
+    CACHE PATH "Path to Ethos-U bare metal driver/env"
+)
+set(ET_BUILD_DIR_PATH
+    "${CMAKE_CURRENT_BINARY_DIR}/executorch"
+    CACHE PATH "Path to ExecuTorch build dir"
+)
+set(PYTHON_EXECUTABLE
+    "python"
+    CACHE PATH "Define to override python executable used"
+)
+if(FETCH_ETHOS_U_CONTENT)
+  # Download ethos_u dependency if needed.
+  file(MAKE_DIRECTORY ${ETHOS_SDK_PATH}/../ethos_u)
+
+  include(FetchContent)
+  set(ethos_u_base_tag "25.05")
+  FetchContent_Declare(
+    ethos_u
+    GIT_REPOSITORY https://git.gitlab.arm.com/artificial-intelligence/ethos-u/ethos-u.git
+    GIT_TAG ${ethos_u_base_tag}
+    SOURCE_DIR ${ETHOS_SDK_PATH}
+    BINARY_DIR ${ETHOS_SDK_PATH}
+    SUBBUILD_DIR ${ETHOS_SDK_PATH}/../ethos_u-subbuild
+    SOURCE_SUBDIR none
+  )
+
+  FetchContent_MakeAvailable(ethos_u)
+
+  # Patch manifest to remove unused projects.
+  set(patch_dir "${ET_DIR_PATH}/examples/arm/ethos-u-setup")
+  set(ethos_u_base_rev "24950bd4381b6c51db0349a229f8ba86b8e1093f")
+  execute_process(COMMAND bash -c "pwd && source backends/arm/scripts/utils.sh && patch_repo ${ETHOS_SDK_PATH} ${ethos_u_base_rev} ${patch_dir}"
+    WORKING_DIRECTORY ${ET_DIR_PATH}
+    COMMAND_ECHO STDOUT
+  )
+
+  # Get ethos_u externals only if core_platform folder does not already exist.
+  if(NOT EXISTS "${ETHOS_SDK_PATH}/core_platform")
+    execute_process(COMMAND ${PYTHON_EXECUTABLE} fetch_externals.py -c ${ethos_u_base_tag}.json fetch
+                    WORKING_DIRECTORY ${ETHOS_SDK_PATH}
+                    COMMAND_ECHO STDOUT
+    )
+  endif()
+
+  # Patch core_software to remove unused projects.
+  set(core_software_base_rev "55904c3da73c876c6d6c58290938ae217a8b94bd")
+  execute_process(COMMAND bash -c "pwd && source backends/arm/scripts/utils.sh && patch_repo ${ETHOS_SDK_PATH}/core_software ${core_software_base_rev} ${patch_dir}"
+    WORKING_DIRECTORY ${ET_DIR_PATH}
+    COMMAND_ECHO STDOUT
+  )
+
+  # Always patch the core_platform repo since this is fast enough.
+  set(core_platform_base_rev "1916a9c984819c35b19c9e5c4c80d47e4e866420")
+  execute_process(COMMAND bash -c "pwd && source backends/arm/scripts/utils.sh && patch_repo ${ETHOS_SDK_PATH}/core_platform ${core_platform_base_rev} ${patch_dir}"
+    WORKING_DIRECTORY ${ET_DIR_PATH}
+    COMMAND_ECHO STDOUT
+  )
+endif()
+
+add_subdirectory(${ETHOS_SDK_PATH}/core_platform/targets/corstone-300 target)
+# Shared SRAM config
+target_compile_definitions(ethosu_target_common INTERFACE
+    ETHOSU_MODEL=1
+    ETHOSU_ARENA=0)
+#U55 High End Embedded
+target_compile_definitions(ethosu_target_common INTERFACE
+        # Configure NPU architecture timing adapters
+        # This is just example numbers and you should make this match your hardware
+        # SRAM
+        ETHOSU_TA_MAXR_0=8
+        ETHOSU_TA_MAXW_0=8
+        ETHOSU_TA_MAXRW_0=0
+        ETHOSU_TA_RLATENCY_0=32
+        ETHOSU_TA_WLATENCY_0=32
+        ETHOSU_TA_PULSE_ON_0=3999
+        ETHOSU_TA_PULSE_OFF_0=1
+        ETHOSU_TA_BWCAP_0=4000
+        ETHOSU_TA_PERFCTRL_0=0
+        ETHOSU_TA_PERFCNT_0=0
+        ETHOSU_TA_MODE_0=1
+        ETHOSU_TA_HISTBIN_0=0
+        ETHOSU_TA_HISTCNT_0=0
+        # Flash
+        ETHOSU_TA_MAXR_1=2
+        ETHOSU_TA_MAXW_1=0
+        ETHOSU_TA_MAXRW_1=0
+        ETHOSU_TA_RLATENCY_1=64
+        ETHOSU_TA_WLATENCY_1=0
+        ETHOSU_TA_PULSE_ON_1=320
+        ETHOSU_TA_PULSE_OFF_1=80
+        ETHOSU_TA_BWCAP_1=50
+        ETHOSU_TA_PERFCTRL_1=0
+        ETHOSU_TA_PERFCNT_1=0
+        ETHOSU_TA_MODE_1=1
+        ETHOSU_TA_HISTBIN_1=0
+        ETHOSU_TA_HISTCNT_1=0
+        )
+
+add_library(et_delegate_ethos_u STATIC IMPORTED)
+set_property(
+  TARGET et_delegate_ethos_u
+  PROPERTY IMPORTED_LOCATION
+           "${ET_BUILD_DIR_PATH}/backends/arm/libexecutorch_delegate_ethos_u.a"
+)
+
 # Create a single Zephyr library that includes ExecuTorch integration and PAL
 zephyr_library_named(libexecutorch)
 
