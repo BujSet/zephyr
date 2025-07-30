@@ -87,6 +87,8 @@ else()
 	set(EXECUTORCH_BUILD_XNNPACK OFF)
 endif()
 set(EXECUTORCH_BUILD_EXTENSION_RUNNER_UTIL ON)
+set(CMAKE_SYSTEM_PROCESSOR "cortex-m55")
+set(CMAKE_TOOLCHAIN_FILE ${EXECUTORCH_DIR}/examples/zephyr/x86_64-linux-arm-zephyr-eabi-gcc.cmake)
 
 # Suppress noisy ABI warnings from GCC that are not relevant when building
 # from source.
@@ -382,7 +384,7 @@ if(CONFIG_EXECUTORCH_BACKEND_ARM)
 	endforeach()
 endif()
 
-option(FETCH_ETHOS_U_CONTENT "Fetch ethos_u dependencies instead of relying on pre-downloads" ON)
+option(FETCH_ETHOS_U_CONTENT "Fetch ethos_u dependencies instead of relying on pre-downloads" OFF)
 set(ET_DIR_PATH
 	"${EXECUTORCH_DIR}"
     CACHE PATH "Path to ExecuTorch dir"
