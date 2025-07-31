@@ -401,6 +401,10 @@ set(PYTHON_EXECUTABLE
     "python"
     CACHE PATH "Define to override python executable used"
 )
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -mthumb -mcpu=cortex-m55")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mthumb -mcpu=cortex-m55")
+message(STATUS "C_FLAGS: ${CMAKE_C_FLAGS}")
+message(STATUS "CXX_FLAGS: ${CMAKE_CXX_FLAGS}")
 if(FETCH_ETHOS_U_CONTENT)
   # Download ethos_u dependency if needed.
   file(MAKE_DIRECTORY ${ETHOS_SDK_PATH}/../ethos_u)
@@ -436,6 +440,8 @@ if(FETCH_ETHOS_U_CONTENT)
   endif()
 
   # Patch core_software to remove unused projects.
+  # BUJJI TODO Remember to comment out the subdir builds for rtos and tensorflow lite micro in 
+  # ~/modules/lib/executorch/examples/arm/ethos-u-scratch/ethos-u/core_software/CMakeLists.txt
   set(core_software_base_rev "55904c3da73c876c6d6c58290938ae217a8b94bd")
   execute_process(COMMAND bash -c "pwd && source backends/arm/scripts/utils.sh && patch_repo ${ETHOS_SDK_PATH}/core_software ${core_software_base_rev} ${patch_dir}"
     WORKING_DIRECTORY ${ET_DIR_PATH}
@@ -443,6 +449,8 @@ if(FETCH_ETHOS_U_CONTENT)
   )
 
   # Always patch the core_platform repo since this is fast enough.
+  # BUJJI TODO Remember to comment out all the applications in this subdir 
+  # ~/modules/lib/executorch/examples/arm/ethos-u-scratch/ethos-u/core_platform/applications/CMakeLists.txt
   set(core_platform_base_rev "1916a9c984819c35b19c9e5c4c80d47e4e866420")
   execute_process(COMMAND bash -c "pwd && source backends/arm/scripts/utils.sh && patch_repo ${ETHOS_SDK_PATH}/core_platform ${core_platform_base_rev} ${patch_dir}"
     WORKING_DIRECTORY ${ET_DIR_PATH}
@@ -501,8 +509,10 @@ zephyr_library_named(libexecutorch)
 
 # Link ExecuTorch libraries
 target_link_libraries(libexecutorch PUBLIC
-	executorch_core
+  executorch_core
 )
+  #"-Wl,--whole-archive"
+  #et_delegate_ethos_u
 
 # Only link portable_ops_lib if it was built (i.e., if portable ops are enabled)
 if(TARGET portable_ops_lib)
