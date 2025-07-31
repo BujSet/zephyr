@@ -19,6 +19,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <memory>
+#include <cmath>
 #include <vector>
 #include <zephyr/kernel.h>
 #include <zephyr/sys/printk.h>
@@ -67,6 +68,12 @@ char* model_pte = nullptr;
  * e.g. This includes the pte as a big chunk of data struct into this file
  */
 #include "model_pte.h"
+#include "imagenet_classes.h"
+#include "samoyed_dog_tensor_input.h"
+union FloatBytes {
+    float f;
+    char bytes[sizeof(float)];
+};
 
 #endif
 
@@ -551,13 +558,31 @@ int main(int argc, const char* argv[]) {
           prepared_inputs.error());
     }
   }
-#if defined(ET_DUMP_INPUT)
   {
     std::vector<EValue> inputs(method->inputs_size());
     ET_LOG(Info, "%zu inputs: ", inputs.size());
     Error status = method->get_inputs(inputs.data(), inputs.size());
     ET_CHECK(status == Error::Ok);
 
+    //ET_LOG(Info, "NEED TO READ IN INPUTS FROM FILE HERE");
+    int input_cursor = 0;
+    union FloatBytes cursor_data;
+    for (int i = 0; i < inputs.size(); ++i) {
+      if (inputs[i].isTensor()) {
+        Tensor tensor = inputs[i].toTensor();
+        for (int j = 0; j < tensor.numel(); ++j) {
+          if (tensor.scalar_type() == ScalarType::Float) {
+		  cursor_data.bytes[0] = samoyed_dog_tensor_input_bin[input_cursor++];
+                  cursor_data.bytes[1] = samoyed_dog_tensor_input_bin[input_cursor++];
+                  cursor_data.bytes[2] = samoyed_dog_tensor_input_bin[input_cursor++];
+                  cursor_data.bytes[3] = samoyed_dog_tensor_input_bin[input_cursor++];
+                  tensor.data_ptr<float>()[j] = cursor_data.f;
+	  }
+	}
+      }
+    }
+
+    /*
     for (int i = 0; i < inputs.size(); ++i) {
       if (inputs[i].isTensor()) {
         Tensor tensor = inputs[i].toTensor();
@@ -596,7 +621,7 @@ int main(int argc, const char* argv[]) {
       }
     }
   }
-#endif
+  */
   size_t input_memsize = method_allocator.used_size() - input_membase;
   ET_LOG(Info, "Input prepared.");
 
@@ -667,7 +692,6 @@ int main(int argc, const char* argv[]) {
   for (int i = 0; i < outputs.size(); ++i) {
     if (outputs[i].isTensor()) {
       Tensor tensor = outputs[i].toTensor();
-#if !defined(SEMIHOSTING)
       // The output might be collected and parsed so printf() is used instead
       // of ET_LOG() here
       for (int j = 0; j < tensor.numel(); ++j) {
@@ -698,105 +722,201 @@ int main(int argc, const char* argv[]) {
               tensor.const_data_ptr<int8_t>()[j]);
         }
       }
-#else
-      char out_filename[255];
-      snprintf(out_filename, 255, "%s-%d.bin", output_basename, i);
-      ET_LOG(Info, "Writing output to file: %s", out_filename);
-      FILE* out_file = fopen(out_filename, "wb");
-      auto written_size =
-          fwrite(tensor.const_data_ptr<char>(), 1, tensor.nbytes(), out_file);
-      fclose(out_file);
-#endif
     } else {
       printf("Output[%d]: Not Tensor\n", i);
     }
   }
 
-#if defined(ET_EVENT_TRACER_ENABLED)
-#if !defined(SEMIHOSTING)
-  // Dump the etdump data containing profiling/debugging data to the serial line
-  // base64 encoded
-  ETDumpResult result = etdump_gen.get_etdump_data();
-  if (result.buf != nullptr && result.size > 0) {
-    // On a device with no file system we can't just write it out
-    // to the file-system so we base64 encode it and dump it on the log.
-    int mode = 0;
-    size_t len = result.size;
-    size_t encoded_len = base64_encoded_size(result.size, mode);
-    uint8_t* encoded_buf =
-        reinterpret_cast<uint8_t*>(method_allocator.allocate(encoded_len + 1));
-    if (encoded_buf != nullptr) {
-      int ret = base64_encode(
-          encoded_buf, (uint8_t*)result.buf, &encoded_len, &len, mode);
-      encoded_buf[encoded_len] = 0x00; // Ensure null termination
-      ET_LOG(Info, "Writing etdump.bin [base64]");
-      printf(
-          "#---\necho \"%s\" | base64 -d >etdump.bin\npython3 -m devtools.inspector.inspector_cli --etdump_path etdump.bin  --source_time_scale cycles --target_time_scale cycles\n#---\n",
-          encoded_buf);
+  // Need to convert the logits to probabilities
+  // Mimics the torch.nn.functional softmax implementation
+  for (int i = 0; i < outputs.size(); ++i) {
+      if (outputs[i].isTensor()) {
+          float max_val = 0;
+          bool max_val_set = false;
+          Tensor tensor = outputs[i].toTensor();
+          for (int j = 0; j < tensor.numel(); ++j) {
+              if (tensor.scalar_type() == ScalarType::Float) {
+                  float value  = tensor.const_data_ptr<float>()[j];
+	          if (!max_val_set || value > max_val) {
+                      max_val = value;
+		      max_val_set = true;
+	          }
+              }
+          }
+          printf("Output[%d] max value:%f\n", i, max_val);
+          double sum_exp = 0.0;
+          for (int j = 0; j < tensor.numel(); ++j) {
+              if (tensor.scalar_type() == ScalarType::Float) {
+                  float value  = tensor.const_data_ptr<float>()[j];
+                  tensor.data_ptr<float>()[j] = exp(value - max_val);
+		  sum_exp += value;
+              }
+          }
+          for (int j = 0; j < tensor.numel(); ++j) {
+              if (tensor.scalar_type() == ScalarType::Float) {
+                  float value  = tensor.const_data_ptr<float>()[j];
+                  tensor.data_ptr<float>()[j] = value / sum_exp;
+              }
+          }
+      }
+  }
+
+  
+  ET_LOG(Info, "Printing outputs probabilities.");
+  for (int i = 0; i < outputs.size(); ++i) {
+    if (outputs[i].isTensor()) {
+      Tensor tensor = outputs[i].toTensor();
+      // The output might be collected and parsed so printf() is used instead
+      // of ET_LOG() here
+      for (int j = 0; j < tensor.numel(); ++j) {
+        if (tensor.scalar_type() == ScalarType::Int) {
+          printf(
+              "Output[%d][%d]: (int) %d\n",
+              i,
+              j,
+              tensor.const_data_ptr<int>()[j]);
+        } else if (tensor.scalar_type() == ScalarType::Float) {
+          printf(
+              "Output[%d][%d]: (float) %f\n",
+              i,
+              j,
+              tensor.const_data_ptr<float>()[j]);
+        } else if (tensor.scalar_type() == ScalarType::Char) {
+          printf(
+              "Output[%d][%d]: (char) %d\n",
+              i,
+              j,
+              tensor.const_data_ptr<int8_t>()[j]);
+        } else if (tensor.scalar_type() == ScalarType::Bool) {
+          printf(
+              "Output[%d][%d]: (bool) %s (0x%x)\n",
+              i,
+              j,
+              tensor.const_data_ptr<int8_t>()[j] ? "true " : "false",
+              tensor.const_data_ptr<int8_t>()[j]);
+        }
+      }
     } else {
-      ET_LOG(
-          Error,
-          "Could not allocate memory etdump base64 encoding size %zu",
-          encoded_len + 1);
+      printf("Output[%d]: Not Tensor\n", i);
     }
   }
-#else
-  // Dump the etdump data containing profiling/debugging data to the specified
-  // file.
-  etdump_result result = etdump_gen.get_etdump_data();
-  if (result.buf != nullptr && result.size > 0) {
-    // On a device with a file system we can just write it out
-    // to the file-system.
-    char etdump_filename = "etdump.bin";
-    ET_LOG(Info, "Writing etdump to file: %s", etdump_filename);
-    FILE* f = fopen(etdump_filename, "w+");
-    fwrite((uint8_t*)result.buf, 1, result.size, f);
-    fclose(f);
-    free(result.buf);
+  float top_three_probs[3];
+  int top_three_prob_indicies[3];
+  bool top_three_probs_set[3] = {false, false,false};
+  for (int i = 0; i < outputs.size(); ++i) {
+      if (outputs[i].isTensor()) {
+          Tensor tensor = outputs[i].toTensor();
+          for (int j = 0; j < tensor.numel(); ++j) {
+              if (tensor.scalar_type() == ScalarType::Float) {
+                  float value  = tensor.const_data_ptr<float>()[j];
+		  if (!top_three_probs_set[0] && 
+		      !top_three_probs_set[1] && 
+		      !top_three_probs_set[2]) {
+			  top_three_probs[0] = value;
+			  top_three_prob_indicies[0] = j;
+			  top_three_probs_set[0] = true;
+		  } else if (top_three_probs_set[0] && 
+		      !top_three_probs_set[1] && 
+		      !top_three_probs_set[2]) {
+			  top_three_probs_set[1] = true;
+			  if (value > top_three_probs[0]) {
+				  top_three_probs[1] = top_three_probs[0];
+			          top_three_prob_indicies[1] = top_three_prob_indicies[0]; 
+				  top_three_probs[0] = value;
+			          top_three_prob_indicies[0] = j;
+			  } else { 
+				  top_three_probs[1] = value;
+			          top_three_prob_indicies[1] = j;
+			  }
+		  } else if (top_three_probs_set[0] && 
+		      top_three_probs_set[1] && 
+		      !top_three_probs_set[2]) {
+			  top_three_probs_set[2] = true;
+			  if (value > top_three_probs[0]) {
+				  top_three_probs[2] = top_three_probs[1];
+			          top_three_prob_indicies[2] = top_three_prob_indicies[1]; 
+				  top_three_probs[1] = top_three_probs[0];
+			          top_three_prob_indicies[1] = top_three_prob_indicies[0]; 
+				  top_three_probs[0] = value;
+			          top_three_prob_indicies[0] = j;
+			  } else if (value > top_three_probs[1]) {
+				  top_three_probs[2] = top_three_probs[1];
+			          top_three_prob_indicies[2] = top_three_prob_indicies[1]; 
+				  top_three_probs[1] = value;
+			          top_three_prob_indicies[1] = j;
+			  } else { 
+				  top_three_probs[2] = value;
+			          top_three_prob_indicies[2] = j;
+			  }
+		  } else {
+			  assert(top_three_probs_set[0] && 
+		              top_three_probs_set[1] && 
+		              top_three_probs_set[2]);
+			  if (value > top_three_probs[0]) {
+				  top_three_probs[2] = top_three_probs[1];
+			          top_three_prob_indicies[2] = top_three_prob_indicies[1]; 
+				  top_three_probs[1] = top_three_probs[0];
+			          top_three_prob_indicies[1] = top_three_prob_indicies[0]; 
+				  top_three_probs[0] = value;
+			          top_three_prob_indicies[0] = j;
+			  } else if (value > top_three_probs[1]) {
+				  top_three_probs[2] = top_three_probs[1];
+			          top_three_prob_indicies[2] = top_three_prob_indicies[1]; 
+				  top_three_probs[1] = value;
+			          top_three_prob_indicies[1] = j;
+			  } else if (value > top_three_probs[2]) {
+				  top_three_probs[2] = value;
+			          top_three_prob_indicies[2] = j;
+			  } else { 
+			  }
+
+
+		  }
+              }
+          }
+      }
   }
-#endif
-#endif
-
-#if defined(ET_BUNDLE_IO)
-  if (bundle_io) {
-    // Check result
-    ErrorStats stats =
-        compute_method_output_error_stats(*method, model_pte, testset_idx);
-    if (stats.status == Error::Ok) {
-      ET_LOG(Info, "=== Error stats for testset %d ===", testset_idx);
-      ET_LOG(Info, " mean_absolute_error: %f", stats.mean_abs_error);
-      ET_LOG(Info, " max_absolute_error:  %f", stats.max_abs_error);
-      ET_LOG(Info, " mean_relative_error: %f", stats.mean_relative_error);
-      ET_LOG(Info, " max_relative_error:  %f", stats.max_relative_error);
-    } else {
-      ET_LOG(
-          Info,
-          "=== Error calculating stats for testset %d ERROR:%d ===",
-          testset_idx,
-          stats.status);
-    }
-
-    // Verify the result.
-    status = verify_method_outputs(
-        *method, model_pte, testset_idx, et_rtol, et_atol);
-    if (status == Error::Ok) {
-      ET_LOG(Info, "Model output match expected BundleIO bpte ref data.");
-      ET_LOG(Info, "TEST: BundleIO index[%d] Test_result: PASS", testset_idx);
-    } else {
-      ET_LOG(
-          Error,
-          "Model output don't match expected BundleIO bpte ref data. rtol=%f atol=%f",
-          et_rtol,
-          et_atol);
-      ET_LOG(Error, "TEST: BundleIO index[%d] Test_result: FAIL", testset_idx);
-    }
-    ET_CHECK_MSG(
-        status == Error::Ok,
-        "Bundle verification failed with status 0x%" PRIx32,
-        status);
+ 
+  ET_LOG(Info, "Printing top three probabilities and indices:");
+  ET_LOG(Info, "Prob,Idx: %f,%d", top_three_probs[0], top_three_prob_indicies[0]);
+  ET_LOG(Info, "Prob,Idx: %f,%d", top_three_probs[1], top_three_prob_indicies[1]);
+  ET_LOG(Info, "Prob,Idx: %f,%d", top_three_probs[2], top_three_prob_indicies[2]);
+  char class_name[256];
+  unsigned int name_idx = 0;
+  unsigned int name_char_idx = 0;
+  memset(class_name, 0, sizeof(class_name));
+  for(unsigned int i = 0; i < imagenet_classes_txt_len; i++) {
+	  if (name_idx == top_three_prob_indicies[0]) {
+		  class_name[name_char_idx++] = imagenet_classes_txt[i];
+	  }
+	  if(imagenet_classes_txt[i] == '\n') {
+		  name_idx++;
+	  }
   }
-#endif
+  ET_LOG(Info, "Prob,Idx: %f,%d | Label: %s", top_three_probs[0], top_three_prob_indicies[0], class_name);
+  
 
+  memset(class_name, 0, sizeof(class_name));
+  for(unsigned int i = 0; i < imagenet_classes_txt_len; i++) {
+	  if (name_idx == top_three_prob_indicies[1]) {
+		  class_name[name_char_idx++] = imagenet_classes_txt[i];
+	  }
+	  if(imagenet_classes_txt[i] == '\n') {
+		  name_idx++;
+	  }
+  }
+  ET_LOG(Info, "Prob,Idx: %f,%d | Label: %s", top_three_probs[1], top_three_prob_indicies[1], class_name);
+
+  memset(class_name, 0, sizeof(class_name));
+  for(unsigned int i = 0; i < imagenet_classes_txt_len; i++) {
+	  if (name_idx == top_three_prob_indicies[2]) {
+		  class_name[name_char_idx++] = imagenet_classes_txt[i];
+	  }
+	  if(imagenet_classes_txt[i] == '\n') {
+		  name_idx++;
+	  }
+  }
+  ET_LOG(Info, "Prob,Idx: %f,%d | Label: %s", top_three_probs[2], top_three_prob_indicies[2], class_name);
   ET_LOG(Info, "Program complete, exiting.");
 #if defined(SEMIHOSTING)
   _exit(0);

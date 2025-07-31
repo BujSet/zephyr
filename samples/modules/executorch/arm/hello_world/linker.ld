@@ -10,7 +10,7 @@ GROUP_START(DDR4S0)
 	SECTION_DATA_PROLOGUE(_DDR4S0_SECTION_NAME,,SUBALIGN(16))
 	{
 		. = ALIGN(16);
-		*(network_model_sec)
+		*(network_model_sec image_net_classes input_image)
 	} GROUP_LINK_IN(DDR4S0)
 
 GROUP_END(DDR4S0)
