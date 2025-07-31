@@ -620,8 +620,8 @@ int main(int argc, const char* argv[]) {
         printf("Input[%d]: Not Tensor\n", i);
       }
     }
-  }
   */
+  }
   size_t input_memsize = method_allocator.used_size() - input_membase;
   ET_LOG(Info, "Input prepared.");
 
@@ -749,7 +749,7 @@ int main(int argc, const char* argv[]) {
               if (tensor.scalar_type() == ScalarType::Float) {
                   float value  = tensor.const_data_ptr<float>()[j];
                   tensor.data_ptr<float>()[j] = exp(value - max_val);
-		  sum_exp += value;
+		  sum_exp += tensor.const_data_ptr<float>()[j];
               }
           }
           for (int j = 0; j < tensor.numel(); ++j) {
@@ -878,9 +878,6 @@ int main(int argc, const char* argv[]) {
   }
  
   ET_LOG(Info, "Printing top three probabilities and indices:");
-  ET_LOG(Info, "Prob,Idx: %f,%d", top_three_probs[0], top_three_prob_indicies[0]);
-  ET_LOG(Info, "Prob,Idx: %f,%d", top_three_probs[1], top_three_prob_indicies[1]);
-  ET_LOG(Info, "Prob,Idx: %f,%d", top_three_probs[2], top_three_prob_indicies[2]);
   char class_name[256];
   unsigned int name_idx = 0;
   unsigned int name_char_idx = 0;
@@ -896,6 +893,8 @@ int main(int argc, const char* argv[]) {
   ET_LOG(Info, "Prob,Idx: %f,%d | Label: %s", top_three_probs[0], top_three_prob_indicies[0], class_name);
   
 
+  name_idx = 0;
+  name_char_idx = 0;
   memset(class_name, 0, sizeof(class_name));
   for(unsigned int i = 0; i < imagenet_classes_txt_len; i++) {
 	  if (name_idx == top_three_prob_indicies[1]) {
@@ -907,6 +906,8 @@ int main(int argc, const char* argv[]) {
   }
   ET_LOG(Info, "Prob,Idx: %f,%d | Label: %s", top_three_probs[1], top_three_prob_indicies[1], class_name);
 
+  name_idx = 0;
+  name_char_idx = 0;
   memset(class_name, 0, sizeof(class_name));
   for(unsigned int i = 0; i < imagenet_classes_txt_len; i++) {
 	  if (name_idx == top_three_prob_indicies[2]) {
