@@ -157,3 +157,5 @@ The sample consists of:
 - ``arm_memory_allocator.hpp``: ARM-optimized memory allocator
 - ``build_model.py``: Automated build pipeline
 - ``CMakeLists.txt``: Selective operator building support 
+
+Used `xxd` to convert binary to C style header
