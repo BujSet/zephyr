@@ -323,6 +323,7 @@ if(CONFIG_EXECUTORCH_BACKEND_ARM)
 		portable_kernels
 		optimized_portable_kernels
 		quantized_kernels
+                executorch_delegate_ethos_u
 		extension_data_loader
 		extension_runner_util
 		extension_tensor
@@ -506,11 +507,26 @@ set_property(
 
 # Create a single Zephyr library that includes ExecuTorch integration and PAL
 zephyr_library_named(libexecutorch)
+#install()
+#install(TARGETS libexecutorch)
+#install(TARGETS executorch)
 
+#kernel_link_options(executorch_delegate_ethos_u)
 # Link ExecuTorch libraries
+#find_package(ethos_target_init)
+#kernel_link_options(ethos_target_init)
+#kernel_link_options(executorch_delegate_ethos_u)
+set_target_properties(executorch_delegate_ethos_u PROPERTIES
+  INTERFACE_INCLUDE_DIRECTORIES "${EXECUTORCH_DIR}/examples/arm/ethos-u-scratch/ethos-u/core_software/Cortex_DFP/Device/ARMCM55/Config/"
+  INTERFACE_LINK_LIBRARIES "\$<LINK_ONLY:executorch_core>;ethosu_target_init"
+  INTERFACE_LINK_OPTIONS "SHELL:LINKER:--whole-archive,\$<TARGET_FILE:executorch_delegate_ethos_u>"
+)
 target_link_libraries(libexecutorch PUBLIC
   executorch_core
+  executorch_delegate_ethos_u
 )
+  #ethosu_target_init
+  #executorch_delegate_ethos_u
   #"-Wl,--whole-archive"
   #et_delegate_ethos_u
 

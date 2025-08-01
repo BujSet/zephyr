@@ -4,6 +4,7 @@ cmake_minimum_required(VERSION 3.24)
 set(CONF_FILE "${CMAKE_CURRENT_SOURCE_DIR}/prj.conf;${CMAKE_CURRENT_SOURCE_DIR}/prj_selective.conf")
 
 find_package(Zephyr REQUIRED HINTS $ENV{ZEPHYR_BASE})
+#find_package(executorch)
 project(executorch_hello_world)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-switch -Wno-float-conversion -Wno-double-promotion -ffunction-sections -fdata-sections")
@@ -84,7 +85,7 @@ target_link_libraries(app PRIVATE
     libexecutorch
     ${EXECUTORCH_OPS_LIB}
 )
-    #executorch
+    #libexecutorch
     #executorch_delegate_ethos_u
 
 # Add include directory for generated headers
