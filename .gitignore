@@ -111,3 +111,7 @@ SysbuildKconfigBasicNoModules.txt
 TextEncoding.txt
 YAMLLint.txt
 ZephyrModuleFile.txt
+
+# ExecuTorch sample files
+samples/modules/executorch/arm-fvp-tutorials/models/**/src/model_pte.h
+samples/modules/executorch/arm-fvp-tutorials/models/**/src/gen_ops_def.yml

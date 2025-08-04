@@ -65,7 +65,7 @@ config EXECUTORCH_BUILD_PORTABLE_OPS
 
 config EXECUTORCH_METHOD_ALLOCATOR_POOL_SIZE
 	int "Method allocator pool size in bytes"
-	default 16384
+	default 262144000
 	help
 	  Size of the method allocator pool in bytes. This memory is used
 	  for allocating ExecuTorch method instances and their metadata.
