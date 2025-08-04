@@ -18,6 +18,7 @@
 #include <executorch/runtime/platform/runtime.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <math.h>
 #include <memory>
 #include <vector>
 #include <zephyr/kernel.h>
@@ -421,51 +422,30 @@ int main(int argc, const char* argv[]) {
   }
 
   std::vector<EValue> outputs(method->outputs_size());
-  ET_LOG(Info, "%zu outputs: ", outputs.size());
   status = method->get_outputs(outputs.data(), outputs.size());
   ET_CHECK(status == Error::Ok);
 
-  // Print the outputs.
-  ET_LOG(Info, "Printing outputs.");
-  for (int i = 0; i < outputs.size(); ++i) {
-    if (outputs[i].isTensor()) {
-      Tensor tensor = outputs[i].toTensor();
-      // The output might be collected and parsed so printf() is used instead
-      // of ET_LOG() here
-      for (int j = 0; j < tensor.numel(); ++j) {
-        if (tensor.scalar_type() == ScalarType::Int) {
-          printf(
-              "Output[%d][%d]: (int) %d\n",
-              i,
-              j,
-              tensor.const_data_ptr<int>()[j]);
-        } else if (tensor.scalar_type() == ScalarType::Float) {
-          printf(
-              "Output[%d][%d]: (float) %f\n",
-              i,
-              j,
-              tensor.const_data_ptr<float>()[j]);
-        } else if (tensor.scalar_type() == ScalarType::Char) {
-          printf(
-              "Output[%d][%d]: (char) %d\n",
-              i,
-              j,
-              tensor.const_data_ptr<int8_t>()[j]);
-        } else if (tensor.scalar_type() == ScalarType::Bool) {
-          printf(
-              "Output[%d][%d]: (bool) %s (0x%x)\n",
-              i,
-              j,
-              tensor.const_data_ptr<int8_t>()[j] ? "true " : "false",
-              tensor.const_data_ptr<int8_t>()[j]);
-        }
-      }
-    } else {
-      printf("Output[%d]: Not Tensor\n", i);
-    }
+  // Verfiication of Outpts (model specific)
+  ET_LOG(Info, "Beginning output verificaiton");
+  if (outputs.size() != 1) {
+    ET_LOG(Info, "ERROR: Incorrect top level dim of output size (%zu != 1)", outputs.size());
+    return 1; 
   }
-
-  ET_LOG(Info, "Program complete, exiting.");
+  if (!outputs[0].isTensor()) {
+    ET_LOG(Info, "ERROR: Expected output to return a tesnor but got something else");
+    return 1;
+  }
+  Tensor tensor = outputs[0].toTensor();
+  if (tensor.numel() != 1) {
+    ET_LOG(Info, "ERROR: Incorrect lower level dim of output (%zu != 1)", tensor.numel());
+    return 1; 
+  }
+  float value = tensor.const_data_ptr<float>()[0];
+  if (fabs(value - 2.0) >= 0.00001f) {
+    ET_LOG(Info, "ERROR: Incorrect value for output (%f != 1)", value);
+    return 1; 
+  }
+  ET_LOG(Info, "SUCCESS: Program complete, exiting.");
   ET_LOG(Info, "\04");
   return 0;
 }
