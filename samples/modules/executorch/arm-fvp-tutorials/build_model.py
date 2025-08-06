@@ -28,7 +28,7 @@ def run_command(cmd, cwd=None, description=""):
 
 def main():
     parser = argparse.ArgumentParser(description="Build ExecuTorch ARM Hello World model")
-    parser.add_argument("--executorch-root", default="~/modules/lib/executorch", 
+    parser.add_argument("--executorch-root", default="/home/zephyruser/modules/lib/executorch", 
                        help="Path to ExecuTorch root directory")
     parser.add_argument("--pte-file", default="add.pte", 
                        help="Exported model (default: add.pte)")
@@ -44,7 +44,6 @@ def main():
     project_root = script_dir.parent.parent.parent.parent.parent.parent  # Go up to petriok root
     executorch_root = args.executorch_root
     sys.path.append(Path(executorch_root).parent)
-    example_files_dir = "/home/zephyruser/zephyr/samples/modules/executorch/arm/hello_world/example_files"
     src_dir = script_dir / "src"
     
     pte_file =  args.pte_file 
@@ -63,7 +62,7 @@ def main():
                 print(f"Cleaned: {file_path}")
 
     # Step 1: Generate operator definitions
-    gen_ops_script = "/home/zephyruser/modules/lib/executorch/codegen/tools/gen_oplist.py"
+    gen_ops_script = executorch_root + "/codegen/tools/gen_oplist.py"
     gen_ops_script = Path(gen_ops_script)
     print(gen_ops_script.resolve())
     if not gen_ops_script.exists():
@@ -80,7 +79,7 @@ def main():
     
     # Step 3: Convert .pte to header file
     #pte_to_header_script = executorch_root / "examples" / "arm" / "executor_runner" / "pte_to_header.py"
-    pte_to_header_script = "/home/zephyruser/modules/lib/executorch/examples/arm/executor_runner/pte_to_header.py"
+    pte_to_header_script = executorch_root + "/examples/arm/executor_runner/pte_to_header.py"
     if not os.path.exists(pte_to_header_script):
         print(f"Error: pte_to_header.py not found at {pte_to_header_script}")
         sys.exit(1)
