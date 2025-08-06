@@ -26,19 +26,48 @@ endif()
     
 # Set EXECUTORCH_ROOT for the Codegen.cmake file 
 set(EXECUTORCH_ROOT ${EXECUTORCH_DIR})
-#set(GENERATED_OPS_DEF_FILE "${CMAKE_CURRENT_BINARY_DIR}/src/gen_ops_def.yml")  
-file(REAL_PATH "src/gen_ops_def.yml" GENERATED_OPS_DEF_FILE) 
     
 include(${EXECUTORCH_DIR}/tools/cmake/Utils.cmake)
 include(${EXECUTORCH_DIR}/tools/cmake/Codegen.cmake)
     
+# TODO: @Bujji ----BEGIN----
+# All of this gross CMake code is just to enable CMake Dtype selective build
+# main issue is that  _kernels_util_all_deps__srcs  _kernels_util_all_deps__srcs must be set 
+# before tools/cmake/Codegen.cmake is used to generate the selected portable ops. But in a zephyr 
+# project, these variables are not visible. The better solution would be to upstream this logic to 
+# the executorch repo, where in tools/cmake/Codegen.cmake, we add a check to see if these variables
+# are empty, and then GLOB_RECURSE fill and FILTER them if not. Note the for looping is only because
+# tools/cmake/Codegen.cmake expects relative paths, so that logic wouldn't need to be upstreamed. 
 set(EXECUTORCH_OPS_LIB selective_portable_ops_lib)
+file(GLOB_RECURSE _kernels_util_all_deps__srcs  "${EXECUTORCH_DIR}/kernels/portable/cpu/util/*.cpp")
+list(FILTER _kernels_util_all_deps__srcs EXCLUDE REGEX "${EXECUTORCH_DIR}/kernels/portable/cpu/util/test/.*")
+set(new_files "")
+foreach(filepath IN LISTS _kernels_util_all_deps__srcs )
+	string(REGEX REPLACE "${EXECUTORCH_DIR}/" "" cleaned_filepath ${filepath})
+  list(APPEND new_files ${cleaned_filepath})
+endforeach()
+set(_kernels_util_all_deps__srcs  ${new_files})
+message(STATUS "_kernels_util_all_deps__srcs: ${_kernels_util_all_deps__srcs}")
+
+file(GLOB_RECURSE ET_OP_SRC_FILES "${EXECUTORCH_ROOT}/kernels/portable/cpu/op_*.cpp" )
+list(FILTER _kernels_util_all_deps__srcs EXCLUDE REGEX "${EXECUTORCH_DIR}/kernels/portable/cpu/util/test/.*")
+set(_portable_kernels__srcs "")
+foreach(filepath IN LISTS ET_OP_SRC_FILES)
+	string(REGEX REPLACE "${EXECUTORCH_DIR}/" "" cleaned_filepath ${filepath})
+  list(APPEND _portable_kernels__srcs ${cleaned_filepath})
+  message(STATUS "APPENDING ${cleaned_filepath}_ortable_kernels__srcs: ${_portable_kernels__srcs}")
+endforeach()
+message(STATUS "_portable_kernels__srcs: ${_portable_kernels__srcs}")
+# TODO: @Bujji ----END----
 
 # Generate selective operators library
 gen_selected_ops(
     LIB_NAME "${EXECUTORCH_OPS_LIB}" 
     ROOT_OPS "aten::add.out"
 )
+    #INCLUDE_ALL_OPS "ON"
+    #OPS_FROM_MODEL "/home/zephyruser/zephyr/samples/modules/executorch/arm/hello_world/add.pte"
+    #DTYPE_SELECTIVE_BUILD "ON"
 
 # Generate bindings for the selected kernels
 generate_bindings_for_kernels(
@@ -53,6 +82,7 @@ gen_operators_lib(
     KERNEL_LIBS portable_kernels
     DEPS executorch_core
 )
+    #DTYPE_SELECTIVE_BUILD "ON"
     
 # Use our custom selective operators library
 message(STATUS "Using selective operators library: ${EXECUTORCH_OPS_LIB}")
@@ -72,7 +102,6 @@ endif()
 zephyr_linker_sources(SECTIONS "${CMAKE_CURRENT_SOURCE_DIR}/../mps3_corstone300_fvp_relocation.ld")
 if (CONFIG_CODE_DATA_RELOCATION)
     # Relocation the Executorch portable operator library to partition S2 of DD4
-    file(GLOB_RECURSE ET_OP_SRC_FILES ${EXECUTORCH_ROOT}/op_*.cpp )
     zephyr_code_relocate(FILES ${ET_OP_SRC_FILES} LOCATION DDR4S2_TEXT_RODATA NOCOPY)
 endif()
 
