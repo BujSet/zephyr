@@ -85,6 +85,8 @@ else()
 	set(EXECUTORCH_BUILD_XNNPACK OFF)
 endif()
 set(EXECUTORCH_BUILD_EXTENSION_RUNNER_UTIL ON)
+set(EXECUTORCH_BUILD_KERNELS_QUANTIZED ON)
+set(EXECUTORCH_BUILD_KERNELS_QUANTIZED_AOT ON)
 
 # Suppress noisy ABI warnings from GCC that are not relevant when building
 # from source.

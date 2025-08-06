@@ -115,3 +115,5 @@ ZephyrModuleFile.txt
 # ExecuTorch sample files
 samples/modules/executorch/arm-fvp-tutorials/models/**/src/model_pte.h
 samples/modules/executorch/arm-fvp-tutorials/models/**/src/gen_ops_def.yml
+samples/modules/executorch/arm-fvp-tutorials/models/*.pte
+samples/modules/executorch/arm-fvp-tutorials/models/**/*.pte

@@ -26,8 +26,6 @@ endif()
     
 # Set EXECUTORCH_ROOT for the Codegen.cmake file 
 set(EXECUTORCH_ROOT ${EXECUTORCH_DIR})
-#set(GENERATED_OPS_DEF_FILE "${CMAKE_CURRENT_BINARY_DIR}/src/gen_ops_def.yml")  
-file(REAL_PATH "src/gen_ops_def.yml" GENERATED_OPS_DEF_FILE) 
     
 include(${EXECUTORCH_DIR}/tools/cmake/Utils.cmake)
 include(${EXECUTORCH_DIR}/tools/cmake/Codegen.cmake)
@@ -72,7 +70,7 @@ endif()
 zephyr_linker_sources(SECTIONS "${CMAKE_CURRENT_SOURCE_DIR}/../mps3_corstone300_fvp_relocation.ld")
 if (CONFIG_CODE_DATA_RELOCATION)
     # Relocation the Executorch portable operator library to partition S2 of DD4
-    file(GLOB_RECURSE ET_OP_SRC_FILES ${EXECUTORCH_ROOT}/op_*.cpp )
+    file(GLOB_RECURSE ET_OP_SRC_FILES ${EXECUTORCH_ROOT}/*.cpp )
     zephyr_code_relocate(FILES ${ET_OP_SRC_FILES} LOCATION DDR4S2_TEXT_RODATA NOCOPY)
 endif()
 
