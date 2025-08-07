@@ -63,6 +63,13 @@ config EXECUTORCH_BUILD_PORTABLE_OPS
 	  operator building to include only needed operators, but the 
 	  underlying kernel implementations will still be available.
 
+config EXECUTORCH_INCLUDE_ARM_QUANTIZE_LIBS
+	bool "Include ExecuTorch quantize and cortex m libraries"
+	default n
+	help
+          When building the application, include the quatnized and cortex m 
+          operator and kernel libraries.
+
 config EXECUTORCH_METHOD_ALLOCATOR_POOL_SIZE
 	int "Method allocator pool size in bytes"
 	default 262144000

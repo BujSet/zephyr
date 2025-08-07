@@ -57,37 +57,46 @@ message(STATUS "Using selective operators library: ${EXECUTORCH_OPS_LIB}")
 
 set(app_sources
     src/arm_executor_runner.cpp
+    src/mv2_output_verifier.cpp
     ${EXECUTORCH_DIR}/examples/arm/executor_runner/arm_memory_allocator.cpp
     ${EXECUTORCH_DIR}/examples/arm/executor_runner/arm_perf_monitor.cpp
     ${EXECUTORCH_DIR}/runtime/platform/default/arm_zephyr.cpp
 )
 target_sources(app PRIVATE ${app_sources})
+target_include_directories(app PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/../")
 
 if(DEFINED CONFIG_EXECUTORCH_METHOD_ALLOCATOR_POOL_SIZE)
     target_compile_definitions(app PRIVATE ET_ARM_METHOD_ALLOCATOR_POOL_SIZE=${CONFIG_EXECUTORCH_METHOD_ALLOCATOR_POOL_SIZE})
 endif()
 
 zephyr_linker_sources(SECTIONS "${CMAKE_CURRENT_SOURCE_DIR}/../mps3_corstone300_fvp_relocation.ld")
+zephyr_linker_sources(SECTIONS "${CMAKE_CURRENT_SOURCE_DIR}/imagenet_relocation.ld")
 if (CONFIG_CODE_DATA_RELOCATION)
     # Relocation the Executorch portable operator library to partition S2 of DD4
     file(GLOB_RECURSE ET_OP_SRC_FILES ${EXECUTORCH_ROOT}/*.cpp )
     zephyr_code_relocate(FILES ${ET_OP_SRC_FILES} LOCATION DDR4S2_TEXT_RODATA NOCOPY)
 endif()
 
-kernel_link_options(quantized_kernels)
-kernel_link_options(quantized_ops_lib)
-kernel_link_options(cortex_m_kernels)
-kernel_link_options(cortex_m_ops_lib)
+if(CONFIG_EXECUTORCH_INCLUDE_ARM_QUANTIZE_LIBS)
+    kernel_link_options(quantized_kernels)
+    kernel_link_options(quantized_ops_lib)
+    kernel_link_options(cortex_m_kernels)
+    kernel_link_options(cortex_m_ops_lib)
+endif()
 
 # Link with ExecuTorch and our operators library
 target_link_libraries(app PRIVATE 
     libexecutorch
     ${EXECUTORCH_OPS_LIB}
-    quantized_kernels
-    quantized_ops_lib
-    cortex_m_kernels
-    cortex_m_ops_lib
 )
+if(CONFIG_EXECUTORCH_INCLUDE_ARM_QUANTIZE_LIBS)
+    target_link_libraries(app PRIVATE 
+        quantized_kernels
+        quantized_ops_lib
+        cortex_m_kernels
+        cortex_m_ops_lib
+    )
+endif()
 
 # Add include directory for generated headers
 target_include_directories(app PRIVATE src) 
