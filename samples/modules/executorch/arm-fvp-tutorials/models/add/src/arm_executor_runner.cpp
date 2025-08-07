@@ -441,9 +441,10 @@ int main(int argc, const char* argv[]) {
     return 1; 
   }
   for (int j = 0; j < tensor.numel(); ++j) {
-      float value = tensor.const_data_ptr<float>()[j];
-      if (fabs(value - 2.0) >= 0.00001f) {
-          ET_LOG(Error, "ERROR: Incorrect value for output[0][%u] (%f != 1)", j, value);
+      int value = tensor.const_data_ptr<int>()[j];
+      if (value != 2) {
+          ET_LOG(Error, "ERROR: Incorrect value for output[0][%u] (%d != 2)", j, value);
+	  return 1;
       }
   }
   ET_LOG(Info, "SUCCESS: Program complete, exiting.");
