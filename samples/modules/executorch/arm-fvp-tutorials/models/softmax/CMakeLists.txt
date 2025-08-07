@@ -32,25 +32,39 @@ include(${EXECUTORCH_DIR}/tools/cmake/Codegen.cmake)
     
 set(EXECUTORCH_OPS_LIB selective_portable_ops_lib)
 
-# Generate selective operators library
-gen_selected_ops(
-    LIB_NAME "${EXECUTORCH_OPS_LIB}" 
-    ROOT_OPS "aten::_softmax.out"
-)
+if(DEFINED ET_PTE_FILE_PATH_FOR_SELECTIVE_BUILD)
+    gen_selected_ops(
+        LIB_NAME "${EXECUTORCH_OPS_LIB}" 
+	OPS_FROM_MODEL "${ET_PTE_FILE_PATH_FOR_SELECTIVE_BUILD}"
+        DTYPE_SELECTIVE_BUILD "ON"
+    )
+    generate_bindings_for_kernels(
+        LIB_NAME "${EXECUTORCH_OPS_LIB}" 
+        FUNCTIONS_YAML "${EXECUTORCH_ROOT}/kernels/portable/functions.yaml"
+    )
+    gen_operators_lib(
+        LIB_NAME "${EXECUTORCH_OPS_LIB}" 
+        KERNEL_LIBS portable_kernels
+        DEPS executorch_core
+        DTYPE_SELECTIVE_BUILD "ON"
+    )
+else()
+    gen_selected_ops(
+        LIB_NAME "${EXECUTORCH_OPS_LIB}" 
+        ROOT_OPS "aten::_softmax.out"
+    )
 
-# Generate bindings for the selected kernels
-generate_bindings_for_kernels(
-    LIB_NAME "${EXECUTORCH_OPS_LIB}" 
-    FUNCTIONS_YAML "${EXECUTORCH_ROOT}/kernels/portable/functions.yaml"
-)
+    generate_bindings_for_kernels(
+        LIB_NAME "${EXECUTORCH_OPS_LIB}" 
+        FUNCTIONS_YAML "${EXECUTORCH_ROOT}/kernels/portable/functions.yaml"
+    )
    
-# Create the actual library target with portable kernels
-# portable_kernels provides the actual kernel implementations (add_out, etc.)
-gen_operators_lib(
-    LIB_NAME "${EXECUTORCH_OPS_LIB}" 
-    KERNEL_LIBS portable_kernels
-    DEPS executorch_core
-)
+    gen_operators_lib(
+        LIB_NAME "${EXECUTORCH_OPS_LIB}" 
+        KERNEL_LIBS portable_kernels
+        DEPS executorch_core
+    )
+endif()
     
 # Use our custom selective operators library
 message(STATUS "Using selective operators library: ${EXECUTORCH_OPS_LIB}")
