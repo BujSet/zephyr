@@ -17,8 +17,10 @@ class MV2OutputVerifier : public OutputVerifier {
         int verify(std::vector<executorch::runtime::EValue>& outputs);
     private:
 	float _max(std::vector<executorch::runtime::EValue>& outputs);
+	void _print(std::vector<executorch::runtime::EValue>& outputs);
 	void _softmax_in_place(std::vector<executorch::runtime::EValue>& outputs, float max_val);
 	void _top_k(std::vector<executorch::runtime::EValue>& in_probs, size_t k, std::vector<float>& out_probs, std::vector<size_t>& out_idxs);
 	void _get_class(size_t idx, char *name_buf, size_t buf_len);
+
 };
 #endif //__MV2_OUTPUT_VERIFICATION_H__
