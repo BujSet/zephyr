@@ -35,9 +35,9 @@
  * e.g. This includes the pte as a big chunk of data struct into this file
  */
 #include "model_pte.h"
-#include "imagenet_classes.h"
+//#include "imagenet_classes.h"
 #include "samoyed_dog_tensor_input.h"
-#include "output_verifier.hpp"
+#include "mv2_output_verifier.hpp"
 union FloatBytes {
     float f;
     char bytes[sizeof(float)];
@@ -449,201 +449,13 @@ int main(int argc, const char* argv[]) {
   std::vector<EValue> outputs(method->outputs_size());
   status = method->get_outputs(outputs.data(), outputs.size());
   ET_CHECK(status == Error::Ok);
-  ET_LOG(Info, "Allocating Output Verifier");
-  OutputVerifier *ov = reinterpret_cast<OutputVerifier*>(method_allocator.allocate(sizeof(OutputVerifier)));
-  ET_LOG(Info, "Verifier says %d", ov->verify(outputs));
 
-  // Need to convert the logits to probabilities
-  // Mimics the torch.nn.functional softmax implementation
-  for (int i = 0; i < outputs.size(); ++i) {
-      if (outputs[i].isTensor()) {
-          float max_val = 0;
-          bool max_val_set = false;
-          Tensor tensor = outputs[i].toTensor();
-          for (int j = 0; j < tensor.numel(); ++j) {
-              if (tensor.scalar_type() == ScalarType::Float) {
-                  float value  = tensor.const_data_ptr<float>()[j];
-	          if (!max_val_set || value > max_val) {
-                      max_val = value;
-		      max_val_set = true;
-	          }
-              }
-          }
-          double sum_exp = 0.0;
-          for (int j = 0; j < tensor.numel(); ++j) {
-              if (tensor.scalar_type() == ScalarType::Float) {
-                  float value  = tensor.const_data_ptr<float>()[j];
-                  tensor.data_ptr<float>()[j] = exp(value - max_val);
-		  sum_exp += tensor.const_data_ptr<float>()[j];
-              }
-          }
-          for (int j = 0; j < tensor.numel(); ++j) {
-              if (tensor.scalar_type() == ScalarType::Float) {
-                  float value  = tensor.const_data_ptr<float>()[j];
-                  tensor.data_ptr<float>()[j] = value / sum_exp;
-              }
-          }
-      }
-  }
-
-  float top_three_probs[3] = {0.0,0.0,0.0};
-  int top_three_prob_indicies[3] = {0,0,0};
-  bool top_three_probs_set[3] = {false, false,false};
-  for (int i = 0; i < outputs.size(); ++i) {
-      if (outputs[i].isTensor()) {
-          Tensor tensor = outputs[i].toTensor();
-          for (int j = 0; j < tensor.numel(); ++j) {
-              if (tensor.scalar_type() == ScalarType::Float) {
-                  float value  = tensor.const_data_ptr<float>()[j];
-		  if (!top_three_probs_set[0] && 
-		      !top_three_probs_set[1] && 
-		      !top_three_probs_set[2]) {
-			  top_three_probs[0] = value;
-			  top_three_prob_indicies[0] = j;
-			  top_three_probs_set[0] = true;
-		  } else if (top_three_probs_set[0] && 
-		      !top_three_probs_set[1] && 
-		      !top_three_probs_set[2]) {
-			  top_three_probs_set[1] = true;
-			  if (value > top_three_probs[0]) {
-				  top_three_probs[1] = top_three_probs[0];
-			          top_three_prob_indicies[1] = top_three_prob_indicies[0]; 
-				  top_three_probs[0] = value;
-			          top_three_prob_indicies[0] = j;
-			  } else { 
-				  top_three_probs[1] = value;
-			          top_three_prob_indicies[1] = j;
-			  }
-		  } else if (top_three_probs_set[0] && 
-		      top_three_probs_set[1] && 
-		      !top_three_probs_set[2]) {
-			  top_three_probs_set[2] = true;
-			  if (value > top_three_probs[0]) {
-				  top_three_probs[2] = top_three_probs[1];
-			          top_three_prob_indicies[2] = top_three_prob_indicies[1]; 
-				  top_three_probs[1] = top_three_probs[0];
-			          top_three_prob_indicies[1] = top_three_prob_indicies[0]; 
-				  top_three_probs[0] = value;
-			          top_three_prob_indicies[0] = j;
-			  } else if (value > top_three_probs[1]) {
-				  top_three_probs[2] = top_three_probs[1];
-			          top_three_prob_indicies[2] = top_three_prob_indicies[1]; 
-				  top_three_probs[1] = value;
-			          top_three_prob_indicies[1] = j;
-			  } else { 
-				  top_three_probs[2] = value;
-			          top_three_prob_indicies[2] = j;
-			  }
-		  } else {
-			  assert(top_three_probs_set[0] && 
-		              top_three_probs_set[1] && 
-		              top_three_probs_set[2]);
-			  if (value > top_three_probs[0]) {
-				  top_three_probs[2] = top_three_probs[1];
-			          top_three_prob_indicies[2] = top_three_prob_indicies[1]; 
-				  top_three_probs[1] = top_three_probs[0];
-			          top_three_prob_indicies[1] = top_three_prob_indicies[0]; 
-				  top_three_probs[0] = value;
-			          top_three_prob_indicies[0] = j;
-			  } else if (value > top_three_probs[1]) {
-				  top_three_probs[2] = top_three_probs[1];
-			          top_three_prob_indicies[2] = top_three_prob_indicies[1]; 
-				  top_three_probs[1] = value;
-			          top_three_prob_indicies[1] = j;
-			  } else if (value > top_three_probs[2]) {
-				  top_three_probs[2] = value;
-			          top_three_prob_indicies[2] = j;
-			  } else { 
-			  }
-
-
-		  }
-              }
-          }
-      }
-  }
- 
-  ET_LOG(Info, "Printing top three probabilities and indices:");
-  char class_name[256];
-  unsigned int name_idx = 0;
-  unsigned int name_char_idx = 0;
-  memset(class_name, 0, sizeof(class_name));
-  for(unsigned int i = 0; i < imagenet_classes_txt_len; i++) {
-      if (name_idx == top_three_prob_indicies[0]) {
-          if (imagenet_classes_txt[i] == '\n') {
-              class_name[name_char_idx++] = '\0';
-	      break;
-	  } else {
-              class_name[name_char_idx++] = imagenet_classes_txt[i];
-	  }
-      }
-      if(imagenet_classes_txt[i] == '\n') {
-          name_idx++;
-      }
-  }
-  ET_LOG(Info, "Prob,Idx: %f,%d | Label: %s", top_three_probs[0], top_three_prob_indicies[0], class_name);
-  
-
-  name_idx = 0;
-  name_char_idx = 0;
-  memset(class_name, 0, sizeof(class_name));
-  for(unsigned int i = 0; i < imagenet_classes_txt_len; i++) {
-      if (name_idx == top_three_prob_indicies[1]) {
-          if (imagenet_classes_txt[i] == '\n') {
-              class_name[name_char_idx++] = '\0';
-	      break;
-	  } else {
-              class_name[name_char_idx++] = imagenet_classes_txt[i];
-	  }
-      }
-      if(imagenet_classes_txt[i] == '\n') {
-          name_idx++;
-      }
-  }
-  ET_LOG(Info, "Prob,Idx: %f,%d | Label: %s", top_three_probs[1], top_three_prob_indicies[1], class_name);
-
-  name_idx = 0;
-  name_char_idx = 0;
-  memset(class_name, 0, sizeof(class_name));
-  for(unsigned int i = 0; i < imagenet_classes_txt_len; i++) {
-      if (name_idx == top_three_prob_indicies[2]) {
-          if (imagenet_classes_txt[i] == '\n') {
-              class_name[name_char_idx++] = '\0';
-	      break;
-	  } else {
-              class_name[name_char_idx++] = imagenet_classes_txt[i];
-	  }
-      }
-      if(imagenet_classes_txt[i] == '\n') {
-          name_idx++;
-      }
-  }
-  ET_LOG(Info, "Prob,Idx: %f,%d | Label: %s", top_three_probs[2], top_three_prob_indicies[2], class_name);
-
-  // Verfiication of Outpts (model specific)
+  // Verfiication of Outputs (model specific)
   ET_LOG(Info, "Beginning output verificaiton");
-  if (outputs.size() != 1) {
-    ET_LOG(Error, "ERROR: Incorrect top level dim of output size (%zu != 1)", outputs.size());
-  }
-  if (!outputs[0].isTensor()) {
-    ET_LOG(Error, "ERROR: Expected output to return a tesnor but got something else");
-  }
-  Tensor tensor = outputs[0].toTensor();
-  if (tensor.numel() != 1000) {
-    ET_LOG(Error, "ERROR: Incorrect lower level dim of output (%zu != 1000)", tensor.numel());
-  }
-  float expected_probs[3] = {0.397523,0.043148,0.035979};
-  int expected_idxs[3] = {258,259,279};
-  for (int i = 0; i < 3; i++) {
-      float prob = top_three_probs[i];
-      int idx = top_three_prob_indicies[i];
-
-      if (fabs(prob - expected_probs[i]) >= 0.00001f) {
-          ET_LOG(Error, "ERROR: Incorrect probability top %zu predicted label (%f != %f)", i, prob, expected_probs[i]);
-      }
-      if (idx != expected_idxs[i]) {
-          ET_LOG(Error, "ERROR: Incorrect label choice for top %zu predicted label (%d != %d)", i, idx, expected_idxs[i]);
-      }
+  MV2OutputVerifier *ov = reinterpret_cast<MV2OutputVerifier*>(method_allocator.allocate(sizeof(OutputVerifier)));
+  if (ov->verify(outputs)) {
+      ET_LOG(Error, "ERROR: Output verifier reported failure");
+      return 1;
   }
   ET_LOG(Info, "SUCCESS: Program complete, exiting.");
   ET_LOG(Info, "\04");

@@ -64,6 +64,7 @@ set(app_sources
 )
 target_sources(app PRIVATE ${app_sources})
 target_include_directories(app PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/../")
+target_include_directories(app PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/src/")
 
 if(DEFINED CONFIG_EXECUTORCH_METHOD_ALLOCATOR_POOL_SIZE)
     target_compile_definitions(app PRIVATE ET_ARM_METHOD_ALLOCATOR_POOL_SIZE=${CONFIG_EXECUTORCH_METHOD_ALLOCATOR_POOL_SIZE})

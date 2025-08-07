@@ -12,8 +12,5 @@ class OutputVerifier {
     public:
         OutputVerifier(void);
         int verify(std::vector<executorch::runtime::EValue>& outputs);
-    private:
-	float _max(std::vector<executorch::runtime::EValue>& outputs);
-
 };
 #endif //__OUTPUT_VERIFICATION_H__
