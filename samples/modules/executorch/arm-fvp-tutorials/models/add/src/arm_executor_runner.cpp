@@ -428,22 +428,23 @@ int main(int argc, const char* argv[]) {
   // Verfiication of Outpts (model specific)
   ET_LOG(Info, "Beginning output verificaiton");
   if (outputs.size() != 1) {
-    ET_LOG(Info, "ERROR: Incorrect top level dim of output size (%zu != 1)", outputs.size());
+    ET_LOG(Error, "ERROR: Incorrect top level dim of output size (%zu != 1)", outputs.size());
     return 1; 
   }
   if (!outputs[0].isTensor()) {
-    ET_LOG(Info, "ERROR: Expected output to return a tesnor but got something else");
+    ET_LOG(Error, "ERROR: Expected output to return a tesnor but got something else");
     return 1;
   }
   Tensor tensor = outputs[0].toTensor();
-  if (tensor.numel() != 1) {
-    ET_LOG(Info, "ERROR: Incorrect lower level dim of output (%zu != 1)", tensor.numel());
+  if (tensor.numel() != 5) {
+    ET_LOG(Error, "ERROR: Incorrect lower level dim of output (%zu != 5)", tensor.numel());
     return 1; 
   }
-  float value = tensor.const_data_ptr<float>()[0];
-  if (fabs(value - 2.0) >= 0.00001f) {
-    ET_LOG(Info, "ERROR: Incorrect value for output (%f != 1)", value);
-    return 1; 
+  for (int j = 0; j < tensor.numel(); ++j) {
+      float value = tensor.const_data_ptr<float>()[j];
+      if (fabs(value - 2.0) >= 0.00001f) {
+          ET_LOG(Error, "ERROR: Incorrect value for output[0][%u] (%f != 1)", j, value);
+      }
   }
   ET_LOG(Info, "SUCCESS: Program complete, exiting.");
   ET_LOG(Info, "\04");
