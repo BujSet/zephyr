@@ -12,7 +12,7 @@ float
 MV2OutputVerifier:: _max(std::vector<executorch::runtime::EValue>& outputs) {
     float max_val = 0;
     bool max_val_set = false;
-    for (int i = 0; i < outputs.size(); ++i) {
+    for (size_t i = 0; i < outputs.size(); ++i) {
         assert(outputs[i].isTensor());
         executorch::aten::Tensor tensor = outputs[i].toTensor();
         for (int j = 0; j < tensor.numel(); ++j) {
@@ -30,7 +30,7 @@ MV2OutputVerifier:: _max(std::vector<executorch::runtime::EValue>& outputs) {
 void 
 MV2OutputVerifier::_softmax_in_place(std::vector<executorch::runtime::EValue>& outputs, float max_val) {
     double sum_exp = 0.0;
-    for (int i = 0; i < outputs.size(); ++i) {
+    for (size_t i = 0; i < outputs.size(); ++i) {
         assert(outputs[i].isTensor());
         executorch::aten::Tensor tensor = outputs[i].toTensor();
 	// First pass to determine sum_exp

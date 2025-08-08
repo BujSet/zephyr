@@ -11,6 +11,7 @@
 class OutputVerifier {
     public:
         OutputVerifier(void);
+	//void _print(std::vector<executorch::runtime::EValue>& outputs);
         int verify(std::vector<executorch::runtime::EValue>& outputs);
 };
 #endif //__OUTPUT_VERIFICATION_H__
