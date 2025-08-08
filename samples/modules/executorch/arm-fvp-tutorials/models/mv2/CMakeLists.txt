@@ -31,6 +31,8 @@ include(${EXECUTORCH_DIR}/tools/cmake/Utils.cmake)
 include(${EXECUTORCH_DIR}/tools/cmake/Codegen.cmake)
     
 set(EXECUTORCH_OPS_LIB selective_portable_ops_lib)
+set(EXECUTORCH_SRCS_FILE "${CMAKE_CURRENT_BINARY_DIR}/modules/executorch/executorch/executorch_srcs.cmake")
+include(${EXECUTORCH_SRCS_FILE})
 
 if(DEFINED ET_PTE_FILE_PATH_FOR_SELECTIVE_BUILD)
     gen_selected_ops(
