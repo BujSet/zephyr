@@ -72,22 +72,23 @@
 		zephyr,memory-region = "SRAM";
 	};
 
-	dtcm: dtcm@30000000 {	/* alias @ 0x20000000 */
+	dtcm: dtcm@20000000 {	/* alias @ 0x20000000 */
 		compatible = "zephyr,memory-region";
-		reg = <0x30000000 DT_SIZE_K(512)>;
+		reg = <0x20000000 DT_SIZE_K(512)>;
 		zephyr,memory-region = "DTCM";
 	};
 
-	isram: isram@31000000 {/* alias @ 0x21000000 */
+	isram: isram@21000000 {/* alias @ 0x21000000 */
 		compatible = "zephyr,memory-region", "mmio-sram";
-		reg = <0x31000000 DT_SIZE_M(2)>;
+		reg = <0x21000000 DT_SIZE_M(2)>;
 		zephyr,memory-region = "ISRAM";
 	        status = "okay";
 	};
+/*
 	ddr4s0: memoryS0@70000000 {
 		device_type = "memory";
 		compatible = "zephyr,memory-region";
-		reg = <0x70000000 DT_SIZE_M(256)>;
+		reg = <0x70000000 DT_SIZE_M(2)>;
 		zephyr,memory-region = "DDR4S0";
                 zephyr,memory-attr = <( DT_MEM_ARM(ATTR_MPU_RAM) )>;
 	        status = "okay";
@@ -95,27 +96,38 @@
 	ddr4s1: memoryS1@90000000 {
 		device_type = "memory";
 		compatible = "zephyr,memory-region";
-		reg = <0x90000000 DT_SIZE_M(256)>;
+		reg = <0x90000000 DT_SIZE_M(2)>;
 		zephyr,memory-region = "DDR4S1";
                 zephyr,memory-attr = <( DT_MEM_ARM(ATTR_MPU_RAM) )>;
 	        status = "okay";
 	};
-	ddr4s2: memoryS2@b0000000 {
+*/
+	qspiflash0: memoryS2@28000000 {
 		device_type = "memory";
 		compatible = "zephyr,memory-region"; 
-		reg = <0xb0000000 DT_SIZE_M(256)>;
-		zephyr,memory-region = "DDR4S2";
+		reg = <0x28000000 DT_SIZE_M(2)>;
+		zephyr,memory-region = "QSPIFLASH0";
                 zephyr,memory-attr = <( DT_MEM_ARM(ATTR_MPU_FLASH) )>;
 	        status = "okay";
 	};
+	qspiflash1: memoryS1@28200000 {
+		device_type = "memory";
+		compatible = "zephyr,memory-region";
+		reg = <0x28200000 DT_SIZE_M(2)>;
+		zephyr,memory-region = "QSPIFLASH1";
+                zephyr,memory-attr = <( DT_MEM_ARM(ATTR_MPU_RAM) )>;
+	        status = "okay";
+	};
+/*
 	ddr4s3: memoryS3@d0000000 {
 		device_type = "memory";
 		compatible = "zephyr,memory-region";
-		reg = <0xd0000000 DT_SIZE_M(256)>;
+		reg = <0xd0000000 DT_SIZE_M(2)>;
 		zephyr,memory-region = "DDR4S3";
                 zephyr,memory-attr = <( DT_MEM_ARM(ATTR_MPU_FLASH) )>;
 	        status = "okay";
 	};
+*/
 
 	soc {
 		peripheral@50000000 {

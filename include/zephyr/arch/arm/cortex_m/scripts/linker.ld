@@ -92,7 +92,7 @@ MEMORY
 #endif
     LINKER_DT_REGIONS()
     /* Used by and documented in include/linker/intlist.ld */
-    IDT_LIST (wx) : ORIGIN = 0xFFFF7FFF, LENGTH = 32K
+    IDT_LIST (wx) : ORIGIN = 0x28400000, LENGTH = 32K
     }
 
 ENTRY(CONFIG_KERNEL_ENTRY)
