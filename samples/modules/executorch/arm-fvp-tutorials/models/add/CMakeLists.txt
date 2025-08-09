@@ -87,7 +87,7 @@ zephyr_linker_sources(SECTIONS "${CMAKE_CURRENT_SOURCE_DIR}/../mps3_corstone300_
 if (CONFIG_CODE_DATA_RELOCATION)
     # Relocation the Executorch portable operator library to partition S2 of DD4
     file(GLOB_RECURSE ET_OP_SRC_FILES ${EXECUTORCH_ROOT}/*.cpp )
-    zephyr_code_relocate(FILES ${ET_OP_SRC_FILES} LOCATION DDR4S2_TEXT_RODATA NOCOPY)
+    zephyr_code_relocate(FILES ${ET_OP_SRC_FILES} LOCATION QSPIFLASH0_TEXT_RODATA NOCOPY)
 endif()
 
 # Link with ExecuTorch and our operators library
