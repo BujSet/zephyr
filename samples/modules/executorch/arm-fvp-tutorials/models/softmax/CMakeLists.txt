@@ -90,11 +90,27 @@ if (CONFIG_CODE_DATA_RELOCATION)
     zephyr_code_relocate(FILES ${ET_OP_SRC_FILES} LOCATION DDR4S2_TEXT_RODATA NOCOPY)
 endif()
 
+if(CONFIG_EXECUTORCH_INCLUDE_ARM_QUANTIZE_LIBS)
+    kernel_link_options(quantized_kernels)
+    kernel_link_options(quantized_ops_lib)
+    kernel_link_options(cortex_m_kernels)
+    kernel_link_options(cortex_m_ops_lib)
+endif()
+
 # Link with ExecuTorch and our operators library
 target_link_libraries(app PRIVATE 
     libexecutorch
     ${EXECUTORCH_OPS_LIB}
 )
+
+if(CONFIG_EXECUTORCH_INCLUDE_ARM_QUANTIZE_LIBS)
+    target_link_libraries(app PRIVATE 
+        quantized_kernels
+        quantized_ops_lib
+        cortex_m_kernels
+        cortex_m_ops_lib
+    )
+endif()
 
 # Add include directory for generated headers
 target_include_directories(app PRIVATE src) 

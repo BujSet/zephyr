@@ -444,7 +444,7 @@ int main(int argc, const char* argv[]) {
       float value = tensor.const_data_ptr<float>()[i];
 
       if (fabs(value - 0.5) >= 0.00001f) {
-          ET_LOG(Info, "ERROR: Incorrect value for output[0][%zu] (%f != 1)", i, value);
+          ET_LOG(Info, "ERROR: Incorrect value for output[0][%zu] (%f != 0.5)", i, value);
           return 1; 
       }
   }
