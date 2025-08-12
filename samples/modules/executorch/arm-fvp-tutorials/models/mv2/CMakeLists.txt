@@ -96,10 +96,10 @@ if (CONFIG_CODE_DATA_RELOCATION)
 endif()
 
 if(CONFIG_EXECUTORCH_INCLUDE_ARM_QUANTIZE_LIBS)
-    kernel_link_options(quantized_kernels)
-    kernel_link_options(quantized_ops_lib)
-    kernel_link_options(cortex_m_kernels)
-    kernel_link_options(cortex_m_ops_lib)
+    executorch_kernel_link_options(quantized_kernels)
+    executorch_kernel_link_options(quantized_ops_lib)
+    executorch_kernel_link_options(cortex_m_kernels)
+    executorch_kernel_link_options(cortex_m_ops_lib)
 endif()
 
 # Link with ExecuTorch and our operators library
