@@ -13,7 +13,7 @@ Requires docker to be installed.
 Start the docker image:
 
 ```
-docker run --rm -it --entrypoint /bin/bash --net=host -w /home/zephyruser/ rselagam/zephyr-armfvp:v1
+docker run -it --entrypoint /bin/bash --net=host -w /home/zephyruser/ rselagam/zephyr-armfvp:v8
 ```
 
 In the docker image, run the following to set up environment and executorch module of zephyr:
@@ -52,7 +52,7 @@ Its strongly recommended to use the docker image paired with this tutorial. You 
 ## Pulling the container
 
 ```
-docker pull rselagam/zephyr-armfvp:v1
+docker pull rselagam/zephyr-armfvp:v8
 ```
 
 ## Starting the docker image
@@ -60,13 +60,13 @@ docker pull rselagam/zephyr-armfvp:v1
 ### Linux/macOS
 
 ```
-docker run --rm -it --entrypoint /bin/bash  --net=host -v "$(pwd)"/workspace:/workspace -w /home/zephyruser/ rselagam/zephyr-armfvp:v1
+docker run -it --entrypoint /bin/bash  --net=host -v "$(pwd)"/workspace:/workspace -w /home/zephyruser/ rselagam/zephyr-armfvp:v8
 ```
 
 ### Windows (PowerShell)
 
 ```
-docker run --rm -it --entrypoint /bin/bash --net=host -v "${PWD}\workspace:/workspace" -w /home/zephyruser/ rselagam/zephyr-armfvp:v1
+docker run -it --entrypoint /bin/bash --net=host -v "${PWD}\workspace:/workspace" -w /home/zephyruser/ rselagam/zephyr-armfvp:v8
 ```
 
 # Wokring inside the Docker image
@@ -199,7 +199,7 @@ I [executorch:arm_executor_runner.cpp:398 main()] method_allocator_planned:  64 
 I [executorch:arm_executor_runner.cpp:400 main()] method_allocator_loaded:   256 bytes
 I [executorch:arm_executor_runner.cpp:401 main()] method_allocator_input:    24 bytes
 I [executorch:arm_executor_runner.cpp:402 main()] method_allocator_executor: 0 bytes
-I [executorch:arm_executor_runner.cpp:405 main()] peak_temp_allocator:       0 / 2048 free: 2048 ( used: 0 % ) 
+I [executorch:arm_executor_runner.cpp:405 main()] peak_temp_allocator:       0 / 2048 free: 2048 ( used: 0 % )
 I [executorch:arm_executor_runner.cpp:421 main()] Model executed successfully.
 I [executorch:arm_executor_runner.cpp:429 main()] Beginning output verificaiton
 I [executorch:arm_executor_runner.cpp:450 main()] SUCCESS: Program complete, exiting.
