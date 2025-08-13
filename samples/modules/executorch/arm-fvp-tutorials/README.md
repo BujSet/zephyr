@@ -1,22 +1,22 @@
 # Arm FVP Tutorial
 
-This tutorial is to demonstrate how to run an exported Executorch model in the Arm FVP simulator.
+This tutorial is to demonstrate how to run an exported ExecuTorch model on an Arm device running Zephyr via the the Arm FVP simulator.
 
 # Requirements
 
-Requires docker to be installed.
+Requires docker to be installed. While the CLI is sufficient to complete this tutorial, Docker Desktop offers a lot of useful features. Instructions for downloading and installing Docker and/or Docker Desktop can be found [here](https://docs.docker.com/desktop/). You should enable docker to utilizes ~60 GB of VM memory, enabling as much swap that fits within your system. This tutorial was tested and validated on a machine with 34.4GB RAM and 1TB of disk where docker VM was permitted 60GB VM memory and 100GB swap space.
 
 # Quick Start Commands
 
 <details>
 
-Start the docker image:
+You can copy-paste the commands below to setup up and validate a working flow. Start the docker image with the following command:
 
 ```
 docker run -it --entrypoint /bin/bash --net=host -w /home/zephyruser/ rselagam/zephyr-armfvp:v8
 ```
 
-In the docker image, run the following to set up environment and executorch module of zephyr:
+Once in the docker image, run the following commands to set up environment and executorch module of zephyr. Please note that you should replace `<YOUR EMAL>` and `<YOUR USER NAME>` with appropriate GitHub credentials:
 
 ```
 git config --global user.email "<YOUR EMAIL>" && \
@@ -57,6 +57,9 @@ docker pull rselagam/zephyr-armfvp:v8
 
 ## Starting the docker image
 
+
+It's often advantageous to map a shared volume between the hsot machine and the running docker image. This allows a user to transfer files between the two seamlessly. In the commands below `workspace` from the current direct is mapped to `/workspace` within the docker container. This flag option can be omitted if file sharing is not needed.
+
 ### Linux/macOS
 
 ```
@@ -69,7 +72,7 @@ docker run -it --entrypoint /bin/bash  --net=host -v "$(pwd)"/workspace:/workspa
 docker run -it --entrypoint /bin/bash --net=host -v "${PWD}\workspace:/workspace" -w /home/zephyruser/ rselagam/zephyr-armfvp:v8
 ```
 
-# Wokring inside the Docker image
+# Working inside the Docker image
 
 ## Setup (One time)
 
