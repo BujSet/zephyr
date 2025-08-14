@@ -13,7 +13,7 @@ Requires docker to be installed. While the CLI is sufficient to complete this tu
 You can copy-paste the commands below to setup up and validate a working flow. Start the docker image with the following command:
 
 ```
-docker run -it --entrypoint /bin/bash --net=host -w /home/zephyruser/ rselagam/zephyr-armfvp:v8
+docker run -it --entrypoint /bin/bash --net=host -w /home/zephyruser/ rselagam/zephyr-armfvp:v11
 ```
 
 Once in the docker image, run the following commands to set up environment and executorch module of zephyr. Please note that you should replace `<YOUR EMAL>` and `<YOUR USER NAME>` with appropriate GitHub credentials:
@@ -21,6 +21,7 @@ Once in the docker image, run the following commands to set up environment and e
 ```
 git config --global user.email "<YOUR EMAIL>" && \
 git config --global user.name "<YOUR USER NAME>"
+./zephyr-sdk-0.17.3/setup.sh -c -t arm-zephyr-eabi
 git clone https://github.com/BujSet/zephyr.git
 cd zephyr/
 git switch -c executorch-module-integration origin/executorch-module-integration
@@ -52,7 +53,7 @@ Its strongly recommended to use the docker image paired with this tutorial. You 
 ## Pulling the container
 
 ```
-docker pull rselagam/zephyr-armfvp:v8
+docker pull rselagam/zephyr-armfvp:v11
 ```
 
 ## Starting the docker image
@@ -63,13 +64,13 @@ It's often advantageous to map a shared volume between the hsot machine and the 
 ### Linux/macOS
 
 ```
-docker run -it --entrypoint /bin/bash  --net=host -v "$(pwd)"/workspace:/workspace -w /home/zephyruser/ rselagam/zephyr-armfvp:v8
+docker run -it --entrypoint /bin/bash  --net=host -v "$(pwd)"/workspace:/workspace -w /home/zephyruser/ rselagam/zephyr-armfvp:v11
 ```
 
 ### Windows (PowerShell)
 
 ```
-docker run -it --entrypoint /bin/bash --net=host -v "${PWD}\workspace:/workspace" -w /home/zephyruser/ rselagam/zephyr-armfvp:v8
+docker run -it --entrypoint /bin/bash --net=host -v "${PWD}\workspace:/workspace" -w /home/zephyruser/ rselagam/zephyr-armfvp:v11
 ```
 
 # Working inside the Docker image
@@ -83,6 +84,7 @@ git clone https://github.com/BujSet/zephyr.git
 cd zephyr/
 git switch -c executorch-module-integration origin/executorch-module-integration
 cd ../
+./zephyr-sdk-0.17.3/setup.sh -c -t arm-zephyr-eabi
 west init -l zephyr
 west config manifest.project-filter -- +executorch
 west -v update
@@ -103,7 +105,6 @@ cd ~/modules/lib/executorch/
 ./examples/arm/setup.sh --i-agree-to-the-contained-eula  --target-toolchain zephyr
 source /home/zephyruser/modules/lib/executorch/examples/arm/ethos-u-scratch/setup_path.sh
 ```
-
 
 ### Setup West Build System
 
