@@ -147,7 +147,7 @@ if(CONFIG_EXECUTORCH_BACKEND_ARM)
 	
 	# Override with ARM-compatible flags (no -fPIC) and comprehensive warning suppressions
 	set(_common_compile_options 
-		${ZEPHYR_COMPILE_OPTIONS}
+		$<BUILD_INTERFACE:${ZEPHYR_COMPILE_OPTIONS}>
 		-Wno-deprecated-declarations 
 		-Wno-psabi
 		-Wno-double-promotion
@@ -175,7 +175,7 @@ if(CONFIG_EXECUTORCH_BACKEND_ARM)
 	get_property(ET_TARGETS DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/executorch PROPERTY BUILDSYSTEM_TARGETS)
 	foreach(target ${ET_TARGETS})
 		if(TARGET ${target})
-			target_compile_options(${target} PRIVATE 
+			target_compile_options(${target} INTERFACE 
 				-Wno-deprecated-declarations
 				-Wno-double-promotion
 				-Wno-float-conversion
@@ -259,7 +259,7 @@ if(CONFIG_EXECUTORCH_BACKEND_ARM)
 	
 	# Create the corrected compile options without -fPIC
 	set(CORRECTED_COMPILE_OPTIONS 
-		${ZEPHYR_COMPILE_OPTIONS}
+		$<BUILD_INTERFACE:${ZEPHYR_COMPILE_OPTIONS}>
 		-Wno-deprecated-declarations 
 		-Wno-psabi
 		-Wno-double-promotion
